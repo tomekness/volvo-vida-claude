@@ -13,6 +13,7 @@ Claude Code skills for Volvo VIDA 2014D diagnostics — control a VIDA VM, read 
 - Build structured repair folders with service manuals extracted from VIDA's database
 - Track trouble codes over time across multiple scans
 - Convert VIDA printouts (XPS → PDF) into the repo
+- Debug VIDA VM problems step-by-step with persistent memory across sessions (`/vida_debug`)
 
 ---
 
@@ -74,6 +75,7 @@ ssh USER@HOST_IP "git clone https://github.com/your-username/volvo-vida-claude.g
 | `/vida_repair <component>` | Build repair folder from VIDA service database |
 | `/vida_xps2pdf` | Convert new VIDA printouts (XPS → PDF) into repo |
 | `/repair_done <folder> <name>` | Mark repair as complete, move to `_done/` |
+| `/vida_debug` | Work one open debug task from `vida_debug/TODO.md`, then stop |
 
 ---
 
@@ -96,6 +98,11 @@ volvo-vida-claude/
 │   ├── _done/              — Completed repairs
 │   ├── reparatur_log.md    — Repair status overview
 │   └── <component>/        — Per-component repair folder
+├── vida_debug/             — Structured debugging workspace
+│   ├── TODO.md             — Open debug tasks (used by /vida_debug)
+│   ├── WORKFLOWS.md        — VM interaction checklists for Claude
+│   ├── logs/               — Session logs (newest first)
+│   └── memory/             — Persistent debug state across sessions
 ├── CLAUDE.md               — Agent context
 └── scripts/config.sh       — Your config (git-ignored, not in repo)
 ```
