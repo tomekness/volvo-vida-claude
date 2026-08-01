@@ -6,6 +6,14 @@ Claude Code skills for Volvo VIDA 2014D diagnostics — control a VIDA VM, read 
 
 ---
 
+## What is VIDA?
+
+VIDA (Vehicle Information and Diagnostics for Aftersales) is Volvo's official dealer diagnostic software, used to read fault codes, program modules, and access service documentation for Volvo vehicles.
+
+Community resources for obtaining a VIDA VM can be found at [volvodiag.com](https://volvodiag.com/) — this project is not affiliated with any provider.
+
+---
+
 ## What This Does
 
 - Start/stop/screenshot the VIDA Windows VM from Claude Code
