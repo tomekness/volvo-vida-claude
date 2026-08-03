@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Setzt die VIDA VM auf einen Snapshot zurück.
+# Usage: vida_reset [snapshot-name]
+# Default: letzter bekannter guter Snapshot (in config.sh als DEFAULT_SNAPSHOT)
+# --list  Zeigt alle verfügbaren Snapshots an
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/config.sh" 2>/dev/null || { echo "FEHLER: scripts/config.sh fehlt"; exit 1; }
+
+ssh_host() {
+  ssh -i "$SSH_KEY" -p "$SSH_PORT" -o StrictHostKeyChecking=no -o BatchMode=yes "$SSH_USER@$SSH_HOST" "$@"
+}
+
+if [ "$1" = "--list" ]; then
+  echo "→ Verfügbare Snapshots:"
+  ssh_host "VBoxManage snapshot '$VM_NAME' list" 2>/dev/null
+  exit 0
+fi
+
+SNAPSHOT="${1:-${DEFAULT_SNAPSHOT:-}}"
+if [ -z "$SNAPSHOT" ]; then
+  echo "FEHLER: Kein Snapshot angegeben und DEFAULT_SNAPSHOT nicht in config.sh gesetzt."
+  echo "Usage: vida_reset <snapshot-name>"
+  echo "       vida_reset --list"
+  exit 1
+fi
+
+echo "→ Snapshot-Reset: '$SNAPSHOT'"
+
+echo "→ Prüfe VM-Status..."
+STATE=$(ssh_host "VBoxManage showvminfo '$VM_NAME' --machinereadable | grep '^VMState='" 2>/dev/null)
+
+if ! echo "$STATE" | grep -qE "poweroff|aborted|saved"; then
+  echo "→ VM läuft noch — poweroff (hart, für Reset OK)..."
+  ssh_host "VBoxManage controlvm '$VM_NAME' poweroff" 2>/dev/null
+  sleep 5
+fi
+
+echo "→ Stelle Snapshot wieder her..."
+if ssh_host "VBoxManage snapshot '$VM_NAME' restore '$SNAPSHOT'" 2>&1; then
+  echo "✓ Snapshot '$SNAPSHOT' wiederhergestellt."
+else
+  echo "! Fehler — verfügbare Snapshots:"
+  ssh_host "VBoxManage snapshot '$VM_NAME' list" 2>/dev/null
+  exit 1
+fi
+
+echo "→ Starte VM headless..."
+ssh_host "VBoxManage startvm '$VM_NAME' --type headless" 2>/dev/null
+sleep 3
+echo "✓ VM gestartet. RDP: $RDP_HOST — Login: vida / vida"

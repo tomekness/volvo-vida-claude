@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# vida_connect — Öffnet SSH-Tunnel zu VIDA Web UI
+#
+# Zugang: http://localhost:<LOCAL_PORT>/Vida  (Browser oder Chrome DevTools MCP)
+# Login: Username "admin" eingeben, kein Passwort
+#
+# Voraussetzung: VIDA VM läuft (vorher: vida_start)
+#
+# Claude Code Nutzung:
+#   1. vida_start ausführen (VM hochfahren)
+#   2. vida_connect ausführen (SSH-Tunnel)
+#   3. Chrome DevTools MCP: new_page http://localhost:<LOCAL_PORT>/Vida
+#   4. fill username → 'admin', click LOG IN
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/config.sh" 2>/dev/null || { echo "FEHLER: scripts/config.sh fehlt"; exit 1; }
+
+LOCAL_PORT="${VIDA_LOCAL_PORT:-18080}"
+REMOTE_PORT="${VIDA_WEB_PORT:-8080}"
+
+# Prüfe ob Tunnel schon läuft
+if ss -tlnp 2>/dev/null | grep -q ":${LOCAL_PORT}"; then
+  echo "✓ Tunnel läuft bereits auf localhost:${LOCAL_PORT}"
+  echo "  VIDA: http://localhost:${LOCAL_PORT}/Vida"
+  exit 0
+fi
+
+echo "→ Starte SSH-Tunnel: localhost:${LOCAL_PORT} → ${SSH_HOST}:${REMOTE_PORT} → VM:80"
+ssh -i "$SSH_KEY" \
+    -p "$SSH_PORT" \
+    -o BatchMode=yes \
+    -o StrictHostKeyChecking=no \
+    -L "${LOCAL_PORT}:localhost:${REMOTE_PORT}" \
+    -N -f \
+    "$SSH_USER@$SSH_HOST" 2>&1
+
+if [ $? -eq 0 ]; then
+  echo "✓ Tunnel aktiv"
+  echo ""
+  echo "VIDA URL: http://localhost:${LOCAL_PORT}/Vida"
+  echo ""
+  echo "Claude Code (Chrome DevTools MCP):"
+  echo "  new_page http://localhost:${LOCAL_PORT}/Vida"
+  echo "  fill username → 'admin'"
+  echo "  click LOG IN"
+  echo ""
+  echo "Tunnel beenden: pkill -f 'ssh.*${LOCAL_PORT}:localhost'"
+else
+  echo "✗ Tunnel fehlgeschlagen"
+  exit 1
+fi

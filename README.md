@@ -49,7 +49,7 @@ git clone https://github.com/your-username/volvo-vida-claude.git
 cd volvo-vida-claude
 ```
 
-**2. Configure** your connection:
+**2. Configure** your connection (all variables explained inline):
 ```bash
 cp scripts/config.sh.example scripts/config.sh
 # Edit scripts/config.sh with your host IP, SSH user, VM name, vehicle info
@@ -84,6 +84,7 @@ ssh USER@HOST_IP "git clone https://github.com/your-username/volvo-vida-claude.g
 | `/vida_xps2pdf` | Convert new VIDA printouts (XPS → PDF) into repo |
 | `/repair_done <folder> <name>` | Mark repair as complete, move to `_done/` |
 | `/vida_debug` | Work one open debug task from `vida_debug/TODO.md`, then stop |
+| `/vida_reset [snapshot]` | Restore VM to a snapshot (default: `DEFAULT_SNAPSHOT` from config.sh) |
 
 ---
 
@@ -97,7 +98,9 @@ volvo-vida-claude/
 │   ├── vida_start          — VM start script
 │   ├── vida_stop           — VM stop script
 │   ├── vida_status         — VM status script
-│   └── vida_screenshot     — VM screenshot script
+│   ├── vida_screenshot     — VM screenshot script
+│   ├── vida_reset          — Restore VM to a snapshot
+│   └── vida_connect        — SSH tunnel to VIDA web UI
 ├── readouts/
 │   ├── vida/               — VIDA scan results (YYYY-MM-DD_scanNN_*.md)
 │   ├── pdfs/               — VIDA printout PDFs
@@ -122,6 +125,37 @@ volvo-vida-claude/
 VIDA 2014D stores all diagnostic data in a SQL Server database (`DiagSwdlSession`) inside the VM. Instead of using the VIDA GUI, `/vida_readout` opens a CMD window in the VM via VirtualBox keyboard scan codes and runs `sqlcmd` queries, then reads the output files from the shared folder (`Z:\` = `~/Downloads` on the host).
 
 `/vida_repair` similarly queries the `servicerep_de-DE` database for service documents, decodes the ZIP-compressed XML content, extracts images via `bcp`, and builds structured repair documentation.
+
+---
+
+## Changing the VIDA UI Language
+
+The VIDA VM (from volvodiag.com) ships with a **Language Switcher** folder on the Windows desktop, containing an installer for each supported language (`V2DLS-German.exe`, `V2DLS-French.exe`, etc.).
+
+Via RDP (`remmina rdp://$RDP_HOST`, login `vida/vida`):
+1. Double-click `Language Switcher\V2DLS-German.exe` (or your language)
+2. Accept the license agreement
+3. Enter password: `volvodiag.com`
+4. Restart VIDA
+
+After switching, take a snapshot so you can always roll back:
+```bash
+scripts/vida_reset --list          # see available snapshots
+```
+
+---
+
+## Resetting to a Known-Good State
+
+If the VM ends up in a broken state, restore a snapshot:
+
+```bash
+scripts/vida_reset                  # restore DEFAULT_SNAPSHOT from config.sh
+scripts/vida_reset "my-snapshot"    # restore a specific snapshot by name
+scripts/vida_reset --list           # list all available snapshots
+```
+
+The script powers off the VM (hard), restores the snapshot, and starts it again headless.
 
 ---
 

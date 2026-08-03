@@ -23,6 +23,7 @@ Template: `scripts/config.sh.example`
 | `/vida_repair <komponente>` | Reparaturmappe aus VIDA-DB erstellen |
 | `/vida_xps2pdf` | VIDA-Druckdokumente (XPS → PDF) |
 | `/repair_done <ordner> <name>` | Reparatur als erledigt markieren |
+| `/vida_reset [snapshot]` | VM auf Snapshot zurücksetzen (default: `DEFAULT_SNAPSHOT` aus config.sh) |
 
 ## Wichtige Pfade
 
@@ -39,6 +40,25 @@ In allen Bash-Blöcken:
 ```bash
 REPO=$(git rev-parse --show-toplevel)
 ```
+
+## VIDA Web UI (Chrome DevTools MCP)
+
+SSH-Tunnel öffnen: `scripts/vida_connect`  
+URL danach: `http://localhost:${VIDA_LOCAL_PORT}/Vida`  
+Login: Username `admin`, kein Passwort (nicht `vida` oder `administrator`!)  
+**Wichtig: VIDA erlaubt nur eine gleichzeitige Session.** Wenn IE in VM eingeloggt ist, wird die Browser-Session automatisch ausgeloggt — immer nur eine aktive Session nutzen.
+
+## Sprache umstellen
+
+Auf dem Windows-Desktop der VM liegt der Ordner **"Language Switcher"** mit Sprach-Installern.  
+Installer-Passwort (bei VMs von volvodiag.com): `volvodiag.com`
+
+Ablauf via RDP (`remmina rdp://$RDP_HOST`):
+1. Doppelklick auf `V2DLS-German.exe` (oder gewünschte Sprache)
+2. Lizenz akzeptieren → Passwort `volvodiag.com` eingeben
+3. VIDA neu starten
+
+Danach: Snapshot empfohlen (`vida_reset --list` für Übersicht).
 
 ## Arbeitsregeln
 

@@ -19,6 +19,13 @@ SQL_PORT_NAT="14333"               # NAT-Port → 1433 in der VM (für VIDA SQL-
 REMOTE_REPO_PATH="~/Desktop/volvo-vida-claude"
 REMOTE_DOWNLOADS_PATH="~/Downloads"   # Als Z:\ in die VM eingebunden
 
+# ── VIDA Web UI (SSH-Tunnel für vida_connect) ────────────────────────────────
+VIDA_WEB_PORT="8080"               # Port auf dem Host-Rechner → VM:80 (nach JBoss-Patch)
+VIDA_LOCAL_PORT="18080"            # Lokaler Port für SSH-Tunnel (vida_connect)
+
+# ── Snapshots ────────────────────────────────────────────────────────────────
+DEFAULT_SNAPSHOT=""                # Default für vida_reset — z.B. "nach-sprachumstellung"
+
 # ── Fahrzeug-Infos (für VIDA-Datenbankabfragen) ──────────────────────────────
 VIN="YOUR_VIN_HERE"
 VIDA_VEHICLE_MODEL="1005"   # fkVehicleModel: 1005 = Volvo V70 II (P2, 2000-2007)
