@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Zeigt Status der VIDA VM und des Host-Rechners
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/config.sh" 2>/dev/null || { echo "FEHLER: scripts/config.sh fehlt"; exit 1; }
+
+ssh_host() {
+  ssh -i "$SSH_KEY" -p "$SSH_PORT" -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" "$@"
+}
+
+echo "=== Host-Rechner ($SSH_HOST) ==="
+ssh_host "echo 'RAM:' && free -h | awk 'NR==2{print \$2\" gesamt, \"\$7\" verfügbar\"}' && echo 'Disk:' && df -h /home | awk 'NR==2{print \$4\" frei (\"\$5\" benutzt)\"}'"
+
+echo ""
+echo "=== VIDA VM ($VM_NAME) ==="
+ssh_host "vboxmanage showvminfo '$VM_NAME' | grep -E '^State|Memory size|Number of CPUs|VRDE port'"
+
+echo ""
+echo "=== RDP-Zugang ==="
+RDP_STATE=$(ssh_host "ss -tn | grep 3389 | head -1" 2>/dev/null)
+if [ -n "$RDP_STATE" ]; then
+  echo "Aktive RDP-Verbindung: $RDP_STATE"
+else
+  echo "Kein aktiver RDP-Client verbunden"
+fi
+echo "Verbinden: remmina rdp://$RDP_HOST"

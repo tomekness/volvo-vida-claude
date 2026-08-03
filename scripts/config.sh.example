@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# VIDA Claude Skills — Konfiguration
+# Kopiere diese Datei: cp scripts/config.sh.example scripts/config.sh
+# Dann die Werte anpassen. config.sh wird NICHT ins Git eingecheckt.
+
+# ── SSH-Zugang zum Host-Rechner ──────────────────────────────────────────────
+SSH_HOST="192.168.1.100"           # IP oder Hostname des Rechners mit VirtualBox
+SSH_PORT="22"                      # SSH-Port (Standard: 22)
+SSH_USER="username"                # SSH-Benutzername auf dem Host
+SSH_KEY="$HOME/.ssh/id_ed25519"    # SSH-Schlüssel
+
+# ── VirtualBox VM ────────────────────────────────────────────────────────────
+VM_NAME="VIDA 2014D"               # Exakter VM-Name wie in VirtualBox angezeigt
+RDP_HOST="192.168.1.100:3389"      # RDP-Adresse (IP:Port)
+SQL_PORT_NAT="14333"               # NAT-Port → 1433 in der VM (für VIDA SQL-Abfragen)
+
+# ── Pfade auf dem Host-Rechner ───────────────────────────────────────────────
+# Deutsches Ubuntu-Locale → ~/Schreibtisch, englisches Ubuntu → ~/Desktop
+REMOTE_REPO_PATH="~/Desktop/volvo-vida-claude"
+REMOTE_DOWNLOADS_PATH="~/Downloads"   # Als Z:\ in die VM eingebunden
+
+# ── Fahrzeug-Infos (für VIDA-Datenbankabfragen) ──────────────────────────────
+VIN="YOUR_VIN_HERE"
+VIDA_VEHICLE_MODEL="1005"   # fkVehicleModel: 1005 = Volvo V70 II (P2, 2000-2007)
+VIDA_MODEL_YEAR="1188"      # fkModelYear:    1188 = Baujahr 2002
+# Andere Modelle ermitteln:
+#   sqlcmd -S .\VIDA -d servicerep_de-DE -Q "SELECT Id, Name FROM VehicleModel ORDER BY Name"
+#   sqlcmd -S .\VIDA -d servicerep_de-DE -Q "SELECT Id, Name FROM ModelYear ORDER BY Name"
