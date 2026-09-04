@@ -4,6 +4,8 @@ _Letzte Aktualisierung: YYYY-MM-DD_
 
 ---
 
+→ **[Werkzeug-Bestand & Abgleich](werkzeug_bestand.md)** — vor jeder Reparatur prüfen ob alles vorhanden
+
 ## Übersicht
 
 | Nr | Komponente | DTC | Dringlichkeit | Status | Anleitung |
