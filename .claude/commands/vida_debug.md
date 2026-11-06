@@ -13,9 +13,9 @@ Führe den Task vollständig aus. Nutze die Befehle aus `vida_debug/WORKFLOWS.md
 **VM-Interaktion** (SSH → Host → VBoxManage):
 ```bash
 source "$(git rev-parse --show-toplevel)/scripts/config.sh"
-ssh -i "$SSH_KEY" -p "$SSH_PORT" -o BatchMode=yes "$SSH_USER@$HOST_IP" \
+ssh -i "$SSH_KEY" -p "$SSH_PORT" -o BatchMode=yes "$SSH_USER@$SSH_HOST" \
   "VBoxManage controlvm \"$VM_NAME\" keyboardputstring \"BEFEHL\""
-ssh -i "$SSH_KEY" -p "$SSH_PORT" -o BatchMode=yes "$SSH_USER@$HOST_IP" \
+ssh -i "$SSH_KEY" -p "$SSH_PORT" -o BatchMode=yes "$SSH_USER@$SSH_HOST" \
   "VBoxManage controlvm \"$VM_NAME\" keyboardputscancode 1c 9c"  # Enter
 ```
 

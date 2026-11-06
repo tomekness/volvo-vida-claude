@@ -48,6 +48,18 @@
 |------|-------------|--------|------|
 | | | | |
 
+### DDM — Fahrertür
+
+| Code | Beschreibung | Status | Neu? |
+|------|-------------|--------|------|
+| | | | |
+
+### PDM — Beifahrertür
+
+| Code | Beschreibung | Status | Neu? |
+|------|-------------|--------|------|
+| | | | |
+
 ### Weitere Steuergeräte
 
 | ECU | Code | Beschreibung | Status |
@@ -66,6 +78,7 @@ _(Nur ausfüllen wenn abweichend oder relevant)_
 | Motordrehzahl | U/min | |
 | Motorlast | % | |
 | Kühlmitteltemp. | °C | |
+| Einspritzzeit | ms | |
 | LTFT | % | |
 | Fahrgeschwindigkeit | km/h | |
 
