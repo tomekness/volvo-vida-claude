@@ -99,10 +99,11 @@ volvo-vida-claude/
 │   ├── vida_stop           — VM stop script
 │   ├── vida_status         — VM status script
 │   ├── vida_screenshot     — VM screenshot script
-│   ├── vida_reset          — Restore VM to a snapshot
-│   └── vida_connect        — SSH tunnel to VIDA web UI
+│   ├── vida_reset              — Restore VM to a snapshot
+│   ├── vida_connect            — SSH tunnel to VIDA web UI
+│   └── extract_vida_images.ps1 — Extract GIF images from VIDA DB (for /vida_repair)
 ├── readouts/
-│   ├── vida/               — VIDA scan results (YYYY-MM-DD_scanNN_*.md)
+│   ├── vida/               — VIDA scan results (YYYY-MM-DD/scanNN_*.md)
 │   ├── pdfs/               — VIDA printout PDFs
 │   └── fehler_verlauf.md   — DTC history across all scans
 ├── repairs/
