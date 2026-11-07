@@ -15,6 +15,7 @@ Template: `scripts/config.sh.example`
 
 | Command | Was |
 |---------|-----|
+| `/vida_init <fahrzeug>` | **Neues Projekt anlegen** — VIDA-IDs ermitteln, `facts/vehicle_facts.md` erstellen |
 | `/vida_start` | VIDA VM starten + RDP öffnen |
 | `/vida_stop` | VIDA VM sauber herunterfahren |
 | `/vida_status` | VM-Zustand + Host RAM/Disk |
@@ -24,15 +25,16 @@ Template: `scripts/config.sh.example`
 | `/vida_xps2pdf` | VIDA-Druckdokumente (XPS → PDF) |
 | `/repair_done <ordner> <name>` | Reparatur als erledigt markieren |
 | `/vida_reset [snapshot]` | VM auf Snapshot zurücksetzen (default: `DEFAULT_SNAPSHOT` aus config.sh) |
+| `/host_sync` | Host-Rechner bidirektional mit Repo synchronisieren |
 
 ## Wichtige Pfade
 
 - Konfiguration: `scripts/config.sh`
-- VIDA-Readouts: `readouts/vida/`
+- Fahrzeugdaten: `facts/vehicle_facts.md` — **Einzige Quelle der Wahrheit** für alle verifizierten Spezifika
+- VIDA-Readouts: `readouts/vida/YYYY-MM-DD/` (Scan-Dateien, Rohdaten, `printouts/`, `screenshots/`)
 - Fehlerverlauf: `readouts/fehler_verlauf.md`
 - Reparaturen: `repairs/`
 - Reparatur-Log: `repairs/reparatur_log.md`
-- PDF-Archiv: `readouts/pdfs/`
 
 ## Repo-Pfad ermitteln
 
@@ -59,6 +61,17 @@ Ablauf via RDP (`remmina rdp://$RDP_HOST`):
 3. VIDA neu starten
 
 Danach: Snapshot empfohlen (`vida_reset --list` für Übersicht).
+
+## Datenqualität — Quellenverantwortung
+
+Bei jeder elektrotechnischen Frage (Pins, Farben, Spannungen, Steckerbelegungen):
+
+1. `facts/vehicle_facts.md` lesen — hier stehen alle verifizierten Fahrzeugdaten mit Quelle
+2. `repairs/KOMPONENTE/` lesen — bestehende Reparaturmappen können mehr Details enthalten
+3. Erst danach VIDA SQL abfragen
+
+**Jede Angabe braucht eine Quellenspalte** — VCC-Nummer oder bestätigte Messung mit Datum.  
+**Fehlende Quelle = Angabe weglassen.** Niemals aus Trainingsdaten ergänzen.
 
 ## Arbeitsregeln
 

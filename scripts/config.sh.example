@@ -17,7 +17,8 @@ SQL_PORT_NAT="14333"               # NAT-Port → 1433 in der VM (für VIDA SQL-
 # ── Pfade auf dem Host-Rechner ───────────────────────────────────────────────
 # Deutsches Ubuntu-Locale → ~/Schreibtisch, englisches Ubuntu → ~/Desktop
 REMOTE_REPO_PATH="~/Desktop/volvo-vida-claude"
-REMOTE_DOWNLOADS_PATH="~/Downloads"   # Als Z:\ in die VM eingebunden
+REMOTE_DOWNLOADS_PATH="~/Downloads"          # Als Z:\ in die VM eingebunden
+REMOTE_SCREENSHOTS_PATH="~/Pictures/Screenshots"  # Ubuntu default; German: ~/Bilder/Bildschirmfotos
 
 # ── VIDA Web UI (SSH-Tunnel für vida_connect) ────────────────────────────────
 VIDA_WEB_PORT="8080"               # Port auf dem Host-Rechner → VM:80 (nach JBoss-Patch)
@@ -28,8 +29,15 @@ DEFAULT_SNAPSHOT=""                # Default für vida_reset — z.B. "nach-spra
 
 # ── Fahrzeug-Infos (für VIDA-Datenbankabfragen) ──────────────────────────────
 VIN="YOUR_VIN_HERE"
-VIDA_VEHICLE_MODEL="1005"   # fkVehicleModel: 1005 = Volvo V70 II (P2, 2000-2007)
-VIDA_MODEL_YEAR="1188"      # fkModelYear:    1188 = Baujahr 2002
-# Andere Modelle ermitteln:
+VIDA_VEHICLE_MODEL="1005"   # fkVehicleModel: 1005 = Volvo V70 II (P2, 2000-2007) — example
+VIDA_MODEL_YEAR="1188"      # fkModelYear:    1188 = model year 2002 — example
+# Find IDs for your vehicle via /vida_init, or manually:
 #   sqlcmd -S .\VIDA -d servicerep_de-DE -Q "SELECT Id, Name FROM VehicleModel ORDER BY Name"
 #   sqlcmd -S .\VIDA -d servicerep_de-DE -Q "SELECT Id, Name FROM ModelYear ORDER BY Name"
+
+# ── vida_docs.db (VIDA document database, ~230 MB, not in git) ───────────────
+# 0 = DB on SSH host (diagnostics machine), queried via SSH
+# 1 = DB local on this machine, direct query (faster, no SSH needed)
+VIDA_DOCS_LOCAL=0
+VIDA_DOCS_DB_PATH="~/Desktop/vida_docs.db"
+# Note: German Ubuntu uses ~/Schreibtisch/ instead of ~/Desktop/

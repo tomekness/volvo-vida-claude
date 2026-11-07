@@ -20,7 +20,8 @@ readouts/vida/YYYY-MM-DD/
   dtc_raw.txt              ← Rohdaten SQL DTC-Export
   freeze_raw.txt           ← Rohdaten SQL Freeze-Frame-Export
   sessions_raw.txt         ← Rohdaten SQL Session-Übersicht
-  freeze_ECM_XXXX.txt      ← Freeze Frame je Code (eine Datei pro DTC)
+  freeze_ECM_9150.txt      ← Freeze Frame je Code (eine Datei pro DTC)
+  freeze_CEM_1A5D.txt      ← dto.
   printouts/               ← VIDA-Drucke als PDF (konvertiert aus XPS)
   screenshots/             ← Screenshots vom Host
 ```
@@ -54,31 +55,31 @@ $SSH_CMD \
 **Wichtig:** Win+R als kombinierte Taste senden — sonst öffnet sich der Explorer statt Run-Dialog.
 
 ```bash
-# Escape — evtl. offene Fenster schließen
-$SSH_CMD 'vboxmanage controlvm "'$VM_NAME'" keyboardputscancode 01 81'
+# Escape um evtl. offene Fenster zu schließen
+$SSH_CMD 'vboxmanage controlvm "$VM_NAME" keyboardputscancode 01 81'
 sleep 1
 # Win+R kombiniert: Win-down, R-down, R-up, Win-up
-$SSH_CMD 'vboxmanage controlvm "'$VM_NAME'" keyboardputscancode e0 5b 13 93 e0 db'
+$SSH_CMD 'vboxmanage controlvm "$VM_NAME" keyboardputscancode e0 5b 13 93 e0 db'
 sleep 2
 # "cmd" eintippen + Enter
-$SSH_CMD 'vboxmanage controlvm "'$VM_NAME'" keyboardputstring "cmd"'
-$SSH_CMD 'vboxmanage controlvm "'$VM_NAME'" keyboardputscancode 1c 9c'
+$SSH_CMD 'vboxmanage controlvm "$VM_NAME" keyboardputstring "cmd"'
+$SSH_CMD 'vboxmanage controlvm "$VM_NAME" keyboardputscancode 1c 9c'
 sleep 3
 ```
 
-Screenshot machen und prüfen ob CMD offen ist, bevor SQL-Queries gesendet werden.
+Screenshot machen und prüfen ob CMD offen ist.
 
 ### 4. Session-Übersicht aus DB holen
 
 ```bash
 $SSH_CMD \
-  'vboxmanage controlvm "'$VM_NAME'" keyboardputstring "sqlcmd -S .\\VIDA -d DiagSwdlSession -Q \"SELECT r.Id, r.Timestamp, COUNT(d.Id) AS CodeCount FROM DtcReadout r LEFT JOIN Dtc d ON d.fkDtcReadoutId=r.Id GROUP BY r.Id, r.Timestamp ORDER BY r.Id\" -o Z:\\sessions_out.txt"'
-$SSH_CMD 'vboxmanage controlvm "'$VM_NAME'" keyboardputscancode 1c 9c'
+  'vboxmanage controlvm "$VM_NAME" keyboardputstring "sqlcmd -S .\\VIDA -d DiagSwdlSession -Q \"SELECT r.Id, r.Timestamp, COUNT(d.Id) AS CodeCount FROM DtcReadout r LEFT JOIN Dtc d ON d.fkDtcReadoutId=r.Id GROUP BY r.Id, r.Timestamp ORDER BY r.Id\" -o Z:\\sessions_out.txt"'
+$SSH_CMD 'vboxmanage controlvm "$VM_NAME" keyboardputscancode 1c 9c'
 sleep 6
 $SSH_CMD "cat $REMOTE_DOWNLOADS_PATH/sessions_out.txt"
 ```
 
-Ergebnis als `sessions_raw.txt` in Datumsordner kopieren:
+Ergebnis als `sessions_raw.txt` ins Datumsordner kopieren:
 ```bash
 $SSH_CMD "cat $REMOTE_DOWNLOADS_PATH/sessions_out.txt" > "$DATE_DIR/sessions_raw.txt"
 ```
@@ -86,7 +87,7 @@ $SSH_CMD "cat $REMOTE_DOWNLOADS_PATH/sessions_out.txt" > "$DATE_DIR/sessions_raw
 ### 5. Lokalen Stand prüfen — welche Sessions sind bereits dokumentiert?
 
 ```bash
-# Sucht rekursiv in allen Datumsunterordnern
+# Sucht rekursiv in allen Date-Unterordnern
 grep -rh "fkDtcReadoutId" "$REPO/readouts/vida/" 2>/dev/null \
   | grep -oP '\b\d{1,5}\b' | sort -nu | tail -1
 ```
@@ -104,16 +105,16 @@ Falls alle DB-Sessions bereits dokumentiert: Nutzer informieren und abbrechen.
 **DTC-Export:**
 ```bash
 $SSH_CMD \
-  'vboxmanage controlvm "'$VM_NAME'" keyboardputstring "sqlcmd -S .\\VIDA -d DiagSwdlSession -Q \"SELECT e.EcuIdentifier, d.HexValue, d.Status, d.Text, d.permanentStatus, d.MileageKilometres, d.fkDtcReadoutId FROM Dtc d JOIN EcuInfo e ON e.Id=d.fkEcuInfoId WHERE d.fkDtcReadoutId > LETZTE_ID ORDER BY d.fkDtcReadoutId, e.EcuIdentifier, d.HexValue\" -o Z:\\dtc_out.txt"'
-$SSH_CMD 'vboxmanage controlvm "'$VM_NAME'" keyboardputscancode 1c 9c'
+  'vboxmanage controlvm "$VM_NAME" keyboardputstring "sqlcmd -S .\\VIDA -d DiagSwdlSession -Q \"SELECT e.EcuIdentifier, d.HexValue, d.Status, d.Text, d.permanentStatus, d.MileageKilometres, d.fkDtcReadoutId FROM Dtc d JOIN EcuInfo e ON e.Id=d.fkEcuInfoId WHERE d.fkDtcReadoutId > LETZTE_ID ORDER BY d.fkDtcReadoutId, e.EcuIdentifier, d.HexValue\" -o Z:\\dtc_out.txt"'
+$SSH_CMD 'vboxmanage controlvm "$VM_NAME" keyboardputscancode 1c 9c'
 sleep 8
 ```
 
 **Freeze-Frame-Export:**
 ```bash
 $SSH_CMD \
-  'vboxmanage controlvm "'$VM_NAME'" keyboardputstring "sqlcmd -S .\\VIDA -d DiagSwdlSession -Q \"SELECT e.EcuIdentifier, d.HexValue, d.fkDtcReadoutId, f.name, f.value FROM FreezeFrameParam f JOIN Dtc d ON d.Id=f.fkDtcId JOIN EcuInfo e ON e.Id=d.fkEcuInfoId WHERE d.fkDtcReadoutId > LETZTE_ID ORDER BY d.fkDtcReadoutId, e.EcuIdentifier, d.HexValue, f.name\" -o Z:\\freeze_out.txt"'
-$SSH_CMD 'vboxmanage controlvm "'$VM_NAME'" keyboardputscancode 1c 9c'
+  'vboxmanage controlvm "$VM_NAME" keyboardputstring "sqlcmd -S .\\VIDA -d DiagSwdlSession -Q \"SELECT e.EcuIdentifier, d.HexValue, d.fkDtcReadoutId, f.name, f.value FROM FreezeFrameParam f JOIN Dtc d ON d.Id=f.fkDtcId JOIN EcuInfo e ON e.Id=d.fkEcuInfoId WHERE d.fkDtcReadoutId > LETZTE_ID ORDER BY d.fkDtcReadoutId, e.EcuIdentifier, d.HexValue, f.name\" -o Z:\\freeze_out.txt"'
+$SSH_CMD 'vboxmanage controlvm "$VM_NAME" keyboardputscancode 1c 9c'
 sleep 10
 ```
 
@@ -132,14 +133,16 @@ $SSH_CMD "cat $REMOTE_DOWNLOADS_PATH/freeze_out.txt" > "$DATE_DIR/freeze_raw.txt
 
 ### 7. Screenshots vom Host kopieren
 
-**Suchpfade** (aus config.sh: `$REMOTE_SCREENSHOTS_PATH`, `$REMOTE_DOWNLOADS_PATH`):
+**Wichtig:** `~` innerhalb doppelter Anführungszeichen wird von der lokalen Shell **nicht** expandiert — korrekt so, damit es auf dem Remote expandiert wird.
 
 Screenshots nach Scan-Datum filtern — Dateien die `$SCAN_DATE` im Namen haben ODER am Scan-Tag geändert wurden:
 
 ```bash
-$SSH_CMD "
-find \"$REMOTE_SCREENSHOTS_PATH\" \"$REMOTE_DOWNLOADS_PATH\" \
-  -maxdepth 3 \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \) \
+# Adjust search paths to match your host's locale
+# German Ubuntu: ~/Bilder/Bildschirmfotos   English: ~/Pictures/Screenshots
+FOUND_SCREENSHOTS=$($SSH_CMD "
+find ~/Pictures/Screenshots ~/Bilder/Bildschirmfotos ~/Downloads \
+  -maxdepth 4 \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \) \
   2>/dev/null | while read f; do
     fname=\$(basename \"\$f\")
     mdate=\$(date -r \"\$f\" +%Y-%m-%d 2>/dev/null)
@@ -147,14 +150,15 @@ find \"$REMOTE_SCREENSHOTS_PATH\" \"$REMOTE_DOWNLOADS_PATH\" \
       echo \"\$f\"
     fi
   done | sort
-"
+")
+echo "Gefunden: $(echo "$FOUND_SCREENSHOTS" | grep -c .)"
 ```
 
-Gefundene Dateien per ssh+cat kopieren:
+Gefundene Dateien via ssh+cat kopieren (umgeht Leerzeichen-Probleme in Dateinamen):
 
 ```bash
-# Für jede gefundene Datei:
 while IFS= read -r remote_path; do
+  [ -z "$remote_path" ] && continue
   local_name=$(basename "$remote_path")
   $SSH_CMD "cat \"$remote_path\"" > "$DATE_DIR/screenshots/$local_name"
   echo "Screenshot: $local_name"
@@ -172,7 +176,9 @@ $SSH_CMD "test -f /tmp/gxps_tools/usr/bin/xpstopdf && echo OK || \
    dpkg -x libgxps-utils*.deb /tmp/gxps_tools && echo OK)"
 ```
 
-**Schritt 1 — XPS in Windows suchen** (sucht in allen User-Ordnern):
+**Schritt 1 — XPS in Windows suchen** (via CMD, sucht in allen User-Ordnern):
+
+VIDA speichert XPS-Drucke standardmäßig in `C:\Users\VIDA User\Documents\`, aber der User kann auch andere Ordner wählen. Deshalb breit suchen:
 
 ```bash
 # Windows CMD: alle XPS mit Scan-Datum in C:\Users\ suchen → Pfade nach Z:\xps_found.txt
@@ -180,11 +186,14 @@ $SSH_CMD "vboxmanage controlvm '$VM_NAME' keyboardputstring \
   'dir /s /b C:\\Users\\*$SCAN_DATE*.xps > Z:\\xps_found.txt 2>NUL'"
 $SSH_CMD "vboxmanage controlvm '$VM_NAME' keyboardputscancode 1c 9c"
 sleep 6
-$SSH_CMD "cat $REMOTE_DOWNLOADS_PATH/xps_found.txt"
+$SSH_CMD "cat ~/Downloads/xps_found.txt"
 ```
+
+Falls kein CMD offen: Win+R → cmd (wie Schritt 3), dann obigen Befehl senden.
 
 Falls kein Treffer mit Datum im Namen — nach Dateien vom Scan-Tag suchen:
 ```bash
+# Alle XPS in C:\Users\ die am Scan-Tag geändert wurden
 $SSH_CMD "vboxmanage controlvm '$VM_NAME' keyboardputstring \
   'forfiles /p C:\\Users /s /m *.xps /d +0 /c \"cmd /c echo @path\" > Z:\\xps_found.txt 2>NUL'"
 $SSH_CMD "vboxmanage controlvm '$VM_NAME' keyboardputscancode 1c 9c"
@@ -193,29 +202,32 @@ sleep 6
 
 **Schritt 2 — Gefundene XPS nach Z:\ kopieren:**
 ```bash
+# Für jeden Pfad aus xps_found.txt:
 $SSH_CMD "vboxmanage controlvm '$VM_NAME' keyboardputstring \
   'for /f \"tokens=*\" %f in (Z:\\xps_found.txt) do copy \"%f\" Z:\\ '"
 $SSH_CMD "vboxmanage controlvm '$VM_NAME' keyboardputscancode 1c 9c"
 sleep 5
-$SSH_CMD "ls $REMOTE_DOWNLOADS_PATH/*.xps 2>/dev/null | sort"
+
+# Prüfen ob angekommen
+$SSH_CMD "ls ~/Downloads/*.xps 2>/dev/null | sort"
 ```
 
-**Schritt 3 — Konvertieren auf Host und lokal kopieren:**
+**Schritt 3 — Konvertieren auf dem Host und lokal kopieren:**
 ```bash
 $SSH_CMD "
 mkdir -p /tmp/vida_pdfs_$SCAN_DATE
-for xps in $REMOTE_DOWNLOADS_PATH/*.xps; do
+for xps in ~/Downloads/*$SCAN_DATE*.xps ~/Downloads/*.xps; do
   [ -f \"\$xps\" ] || continue
   base=\$(basename \"\$xps\" .xps)
   out=\"/tmp/vida_pdfs_$SCAN_DATE/\${base}.pdf\"
-  [ -f \"\$out\" ] && continue
+  [ -f \"\$out\" ] && continue   # schon konvertiert
   /tmp/gxps_tools/usr/bin/xpstopdf \"\$xps\" \"\$out\" 2>/dev/null && \
     echo \"OK: \${base}.pdf\" || echo \"FEHLER: \$base\"
 done
 ls /tmp/vida_pdfs_$SCAN_DATE/
 "
 
-# PDFs lokal ablegen
+# PDFs lokal ablegen (nur neue, die noch nicht in printouts/ sind)
 scp -i "$SSH_KEY" -P "$SSH_PORT" \
   "$SSH_USER@$SSH_HOST:/tmp/vida_pdfs_$SCAN_DATE/*.pdf" \
   "$DATE_DIR/printouts/" 2>/dev/null || true
@@ -241,28 +253,35 @@ for line in lines:
 \""
 ```
 
-Für jeden DTC-Code eine separate Datei anlegen:
+Für jeden DTC-Code (z.B. ECM_9150, CEM_1A5D) eine separate Datei anlegen:
 ```
-$DATE_DIR/freeze_ECM_XXXX.txt
-$DATE_DIR/freeze_CCM_XXXX.txt
+$DATE_DIR/freeze_ECM_9150.txt
+$DATE_DIR/freeze_CEM_1A5D.txt
 ```
 
-Format:
+Format der einzelnen Dateien:
 ```
-# Freeze Frame — ECM XXXX — Session NN (YYYY-MM-DD)
+# Freeze Frame — ECM 9150 — Session NN (YYYY-MM-DD)
 Parameter            | Wert
 ---------------------|------
-Abstand              | ___ km
-Motor läuft          | Ja / Nein
-Kühlmitteltemperatur | ___ °C
+Abstand              | 248.524 km
+Motor läuft          | Ja
+Kühlmitteltemperatur | 86.1°C
 ...
 ```
 
-Wichtige Werte beim Schreiben bewerten (kurzer Kommentar hinter dem Wert):
-- LTFT > ±15%: `⚠️ erhöht`
-- Gleiche km-Zahl nach Löschung: `⚠️ sofort neu gesetzt = aktiver Defekt`
+Wichtige Werte direkt beim Schreiben bewerten (kurzer Kommentar hinter dem Wert):
+- LTFT: `1.27 = +27%  ⚠️ erhöht`
+- Impulsweite > 100%: `1000%  ⚠️ Totalausfall`
+- Motor läuft: `Ja / Nein`
+- Abstand: `248.524 km`
 
 ### 10. Sessions analysieren und vergleichen
+
+**Pflicht vor jeder technischen Aussage (Pins, Farben, Spannungen, Steckerbelegung):**
+
+Erst `$REPO/facts/vehicle_facts.md` lesen. Nur dort dokumentierte Werte verwenden.  
+Fehlende Info → `_(nicht in VIDA gefunden)_` schreiben, nie aus Trainingsdaten ergänzen.
 
 **Bekanntes DB-Schema (DiagSwdlSession):**
 - `Dtc`: Id, fkDtcReadoutId, fkEcuInfoId, Text, HexValue, Status, permanentStatus, MileageKilometres
@@ -287,6 +306,7 @@ Wichtige Werte beim Schreiben bewerten (kurzer Kommentar hinter dem Wert):
 
 **Freeze-Frame-Hinweise:**
 - "Abstand" = km **zum Zeitpunkt des Fehlersetzens**
+- Impulsweite > 100% = Hardware-Defekt
 - LTFT > ±15% = Kraftstoff-Trim erhöht
 - Gleiche km-Zahl nach Löschung = sofort neu gesetzt = aktiver Defekt
 
@@ -308,10 +328,10 @@ $DATE_DIR/scanNN_grund.md
 
 **Relative Links innerhalb der Datei** (da sie im Datumsordner liegt):
 - Rohdaten: `dtc_raw.txt`, `freeze_raw.txt` (gleicher Ordner)
-- Freeze-Frame-Einzeldateien: `freeze_ECM_XXXX.txt` (gleicher Ordner)
-- Printouts: `printouts/NAME.pdf` (Unterordner)
-- Screenshots: `screenshots/bild.png` (Unterordner)
-- Querverweise auf repairs/: `../../../repairs/KOMPONENTE/analyse.md`
+- Freeze-Frame-Einzeldateien: `freeze_ECM_9150.txt` (gleicher Ordner)
+- Printouts: `printouts/scan-DATUM.pdf` (Unterordner)
+- Screenshots: `screenshots/bildschirmfoto.png` (Unterordner)
+- Querverweise auf repairs/: `../../../repairs/komponente/analyse.md`
 
 **Wenn mehrere neue Sessions:** Session-Übersichtstabelle einbauen:
 
@@ -336,9 +356,12 @@ Kommentarzeile am Ende:
 
 Lesen: `$REPO/repairs/reparatur_log.md`
 
-Für jeden offenen Eintrag prüfen ob der neue Scan Neuigkeiten bringt. Falls ja:
-- Betroffene Todo-Zeile(n) aktualisieren
-- Neuen Code ohne Eintrag: neuen Block anlegen
+Für jeden offenen Eintrag prüfen ob der neue Scan Neuigkeiten bringt:
+- Code permanent nach mehreren Scans → echter Defekt, Priorität erhöhen
+- Code nach Löschung verschwunden → Geistercode, beobachten
+- Neuer Code im Vergleich zum letzten Scan → neue Störung dokumentieren
+
+Falls Änderungen: `reparatur_log.md` aktualisieren.
 
 ### 13. fehler_verlauf.md aktualisieren
 
@@ -348,12 +371,14 @@ In `$REPO/readouts/fehler_verlauf.md`:
 2. **Detail-Tabelle:** "Zuletzt" aktualisieren, Status anpassen
 3. Neue Codes → neue Zeile; Geistercodes → `~~durchgestrichen~~`
 4. Kommentarzeile `_(Kommentar: …)_` für User stehen lassen
+5. **Auswertungstabelle** unten: "Wiederaufgetaucht?" eintragen
 
 ### 14. Commit und Push
 
 Immer am Ende ausführen — auch wenn nur Rohdaten oder Screenshots neu sind:
 
 ```bash
+# Alle neuen Dateien im Datumsordner + geänderte Übersichtsdateien
 git -C "$REPO" add "readouts/vida/$SCAN_DATE/"
 git -C "$REPO" add readouts/fehler_verlauf.md repairs/reparatur_log.md
 git -C "$REPO" commit -m "Readout $SCAN_DATE: scanNN — N neue Sessions, X Codes"
@@ -362,6 +387,8 @@ git -C "$REPO" push
 # Host pullen damit beide Seiten synchron sind
 $SSH_CMD "git -C $REMOTE_REPO_PATH pull"
 ```
+
+Direkt committen wie oben, damit die Commit-Message den Scan-Kontext enthält.
 
 ### 15. Zusammenfassung ausgeben
 

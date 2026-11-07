@@ -55,6 +55,10 @@ cp scripts/config.sh.example scripts/config.sh
 # Edit scripts/config.sh with your host IP, SSH user, VM name, vehicle info
 ```
 
+**2b. Set up vida_docs.db** (optional, ~230 MB — enables offline document search):
+
+`vida_docs.db` is a SQLite full-text index of all VIDA service documents. It's not in git. It lives on the diagnostics host machine (or locally on your workstation for SSH-free queries). Set `VIDA_DOCS_LOCAL` and `VIDA_DOCS_DB_PATH` in `scripts/config.sh` accordingly. See `scripts/vida_docs_query.sh` for usage.
+
 **3. Set up SSH key** (if not already done):
 ```bash
 ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519
@@ -75,6 +79,7 @@ ssh USER@HOST_IP "git clone https://github.com/your-username/volvo-vida-claude.g
 
 | Command | What it does |
 |---------|-------------|
+| `/vida_init <vehicle>` | **Set up a new vehicle project** — query VIDA IDs, create `facts/vehicle_facts.md` |
 | `/vida_start` | Start VIDA VM + open RDP connection |
 | `/vida_stop` | Gracefully shut down VIDA VM |
 | `/vida_status` | VM state + host RAM/disk usage |
@@ -83,6 +88,7 @@ ssh USER@HOST_IP "git clone https://github.com/your-username/volvo-vida-claude.g
 | `/vida_repair <component>` | Build repair folder from VIDA service database |
 | `/vida_xps2pdf` | Convert new VIDA printouts (XPS → PDF) into repo |
 | `/repair_done <folder> <name>` | Mark repair as complete, move to `_done/` |
+| `/host_sync` | Sync the diagnostics host machine with the central git repo |
 | `/vida_debug` | Work one open debug task from `vida_debug/TODO.md`, then stop |
 | `/vida_reset [snapshot]` | Restore VM to a snapshot (default: `DEFAULT_SNAPSHOT` from config.sh) |
 
@@ -93,18 +99,26 @@ ssh USER@HOST_IP "git clone https://github.com/your-username/volvo-vida-claude.g
 ```
 volvo-vida-claude/
 ├── .claude/commands/   — Slash command definitions
+├── facts/
+│   └── vehicle_facts.md    — Single source of truth for verified vehicle data (created by /vida_init)
 ├── scripts/
 │   ├── config.sh.example   — Configuration template (copy to config.sh)
+│   ├── vida_docs_query.sh  — Query vida_docs.db locally or via SSH (see VIDA_DOCS_LOCAL in config)
+│   ├── host_sync           — Sync diagnostics host with git repo
 │   ├── vida_start          — VM start script
 │   ├── vida_stop           — VM stop script
 │   ├── vida_status         — VM status script
 │   ├── vida_screenshot     — VM screenshot script
-│   ├── vida_reset              — Restore VM to a snapshot
-│   ├── vida_connect            — SSH tunnel to VIDA web UI
+│   ├── vida_reset          — Restore VM to a snapshot
+│   ├── vida_connect        — SSH tunnel to VIDA web UI
 │   └── extract_vida_images.ps1 — Extract GIF images from VIDA DB (for /vida_repair)
 ├── readouts/
-│   ├── vida/               — VIDA scan results (YYYY-MM-DD/scanNN_*.md)
-│   ├── pdfs/               — VIDA printout PDFs
+│   ├── vida/               — VIDA scan results
+│   │   └── YYYY-MM-DD/     — Per-scan folder
+│   │       ├── scanNN_*.md — Scan analysis file
+│   │       ├── dtc_raw.txt — Raw SQL export
+│   │       ├── printouts/  — VIDA printout PDFs (converted from XPS)
+│   │       └── screenshots/— Host screenshots from scan session
 │   └── fehler_verlauf.md   — DTC history across all scans
 ├── repairs/
 │   ├── _done/              — Completed repairs
@@ -162,14 +176,19 @@ The script powers off the VM (hard), restores the snapshot, and starts it again 
 
 ## Vehicle Configuration
 
-The `fkVehicleModel` and `fkModelYear` values in `scripts/config.sh` are specific to your vehicle. To find the correct values for your Volvo:
+The `fkVehicleModel` and `fkModelYear` values in `scripts/config.sh` are specific to your vehicle. The easiest way to find them is:
 
+```bash
+/vida_init "Volvo V70 2002"   # queries VIDA SQL automatically and sets up facts/vehicle_facts.md
+```
+
+Or manually in CMD inside the VM:
 ```sql
 sqlcmd -S .\VIDA -d servicerep_de-DE -Q "SELECT Id, Name FROM VehicleModel ORDER BY Name"
 sqlcmd -S .\VIDA -d servicerep_de-DE -Q "SELECT Id, Name FROM ModelYear ORDER BY Name"
 ```
 
-Run these in CMD inside the VM.
+VIDA 2014D covers all Volvo models from approximately 1990–2014.
 
 ---
 

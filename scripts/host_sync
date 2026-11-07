@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Syncs the diagnostics host machine with the central git repo.
+# Commits and pushes any local changes on the host, then pulls locally.
+set -euo pipefail
+REPO="$(cd "$(dirname "$0")/.." && pwd)"
+source "$REPO/scripts/config.sh"
+
+REMOTE_PATH="$REMOTE_REPO_PATH"
+
+echo "→ Host: checking for new files..."
+ssh -i "$SSH_KEY" -p "$SSH_PORT" -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" bash << REMOTE
+set -e
+cd $REMOTE_PATH
+
+if [ -n "\$(git status --porcelain)" ]; then
+  git add -A
+  MSG="Host Update: \$(date '+%Y-%m-%d %H:%M')"
+  git commit -m "\$MSG"
+  echo "→ Committed: \$MSG"
+  git push
+  echo "→ Pushed."
+else
+  echo "→ Host: nothing to commit."
+fi
+
+git pull
+echo "✓ Host: pull done."
+REMOTE
+
+echo "→ Pulling locally..."
+git -C "$REPO" pull
+echo "✓ Sync complete."
