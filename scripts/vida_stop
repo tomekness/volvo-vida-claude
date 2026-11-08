@@ -13,12 +13,10 @@ if echo "$STATE" | grep -qE "poweroff|aborted"; then
   exit 0
 fi
 
-echo "→ Sende Windows shutdown /f /s /t 5 via Win+R..."
-run_cmd "VBoxManage controlvm '$VM_NAME' keyboardputscancode e0 5b e0 db" 2>/dev/null
+echo "→ Öffne Win+R und sende shutdown-Befehl..."
+run_cmd "VBoxManage controlvm '$VM_NAME' keyboardputscancode e0 5b 13 93 e0 db" 2>/dev/null
 sleep 1
-run_cmd "VBoxManage controlvm '$VM_NAME' keyboardputscancode 13 93" 2>/dev/null
-sleep 1
-run_cmd "VBoxManage controlvm '$VM_NAME' keyboardputstring 'shutdown /f /s /t 5'" 2>/dev/null
+run_cmd "VBoxManage controlvm '$VM_NAME' keyboardputstring 'shutdown /f /s /t 0'" 2>/dev/null
 sleep 0.5
 run_cmd "VBoxManage controlvm '$VM_NAME' keyboardputscancode 1c 9c" 2>/dev/null
 
