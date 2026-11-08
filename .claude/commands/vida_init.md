@@ -82,8 +82,8 @@ SSH_USER="username"
 SSH_KEY="$HOME/.ssh/id_ed25519"
 VM_NAME="VIDA 2014D"
 RDP_HOST="IP_ODER_HOSTNAME:3389"
-REMOTE_REPO_PATH="~/Desktop/REPO_NAME"  # German Ubuntu: ~/Schreibtisch/REPO_NAME
-REMOTE_DOWNLOADS_PATH="~/Downloads"
+REMOTE_REPO_PATH="$HOST_DESKTOP/REPO_NAME"
+REMOTE_DOWNLOADS_PATH="$HOST_DOWNLOADS"
 VIN="YOUR_VIN_HERE"
 VIDA_VEHICLE_MODEL="MODELL_ID"    # aus Schritt 3b
 VIDA_MODEL_YEAR="JAHR_ID"         # aus Schritt 3d
@@ -91,7 +91,7 @@ VIDA_MODEL_YEAR="JAHR_ID"         # aus Schritt 3d
 # vida_docs.db — 230 MB SQLite, nicht im Git
 # 0 = auf SSH-Host (Diagnose-Rechner), 1 = lokal auf diesem Rechner
 VIDA_DOCS_LOCAL=0
-VIDA_DOCS_DB_PATH="~/Desktop/vida_docs.db"  # German Ubuntu: ~/Schreibtisch/vida_docs.db
+VIDA_DOCS_DB_PATH="$HOST_DESKTOP/vida_docs.db"
 ```
 
 **vida_docs.db einrichten:** Die DB ist fahrzeugunabhängig — einmal pro Diagnose-Rechner, nicht pro Projekt.

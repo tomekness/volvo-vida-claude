@@ -79,7 +79,7 @@ ssh-copy-id -i ~/.ssh/id_ed25519 -p YOUR_PORT USER@HOST_IP
 ```bash
 ssh USER@HOST_IP "git clone https://github.com/your-username/volvo-vida-claude.git ~/Desktop/volvo-vida-claude"
 ```
-*(German Ubuntu locale: use `~/Schreibtisch/` instead of `~/Desktop/`)*
+*(Use whatever path matches `HOST_DESKTOP` in your `scripts/config.sh` — e.g. `~/Schreibtisch/volvo-vida-claude` for German Ubuntu.)*
 
 **5. Open Claude Code** in the repo directory and run `/vida_status` to verify connectivity.
 

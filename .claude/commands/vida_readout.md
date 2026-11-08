@@ -138,10 +138,8 @@ $SSH_CMD "cat $REMOTE_DOWNLOADS_PATH/freeze_out.txt" > "$DATE_DIR/freeze_raw.txt
 Screenshots nach Scan-Datum filtern — Dateien die `$SCAN_DATE` im Namen haben ODER am Scan-Tag geändert wurden:
 
 ```bash
-# Adjust search paths to match your host's locale
-# German Ubuntu: ~/Bilder/Bildschirmfotos   English: ~/Pictures/Screenshots
 FOUND_SCREENSHOTS=$($SSH_CMD "
-find ~/Pictures/Screenshots ~/Bilder/Bildschirmfotos ~/Downloads \
+find $REMOTE_SCREENSHOTS_PATH $REMOTE_DOWNLOADS_PATH \
   -maxdepth 4 \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \) \
   2>/dev/null | while read f; do
     fname=\$(basename \"\$f\")
