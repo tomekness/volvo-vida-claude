@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
-# vida_connect — Öffnet SSH-Tunnel zu VIDA Web UI
+# vida_connect — Öffnet Zugang zur VIDA Web UI
+#
+# In ssh mode:  SSH-Tunnel (localhost:<LOCAL_PORT> → Host → VM:80)
+# In local mode: VIDA läuft direkt auf diesem Rechner, kein Tunnel nötig
 #
 # Zugang: http://localhost:<LOCAL_PORT>/Vida  (Browser oder Chrome DevTools MCP)
 # Login: Username "admin" eingeben, kein Passwort
 #
-# Voraussetzung: VIDA VM läuft (vorher: vida_start)
-#
 # Claude Code Nutzung:
 #   1. vida_start ausführen (VM hochfahren)
-#   2. vida_connect ausführen (SSH-Tunnel)
+#   2. vida_connect ausführen
 #   3. Chrome DevTools MCP: new_page http://localhost:<LOCAL_PORT>/Vida
 #   4. fill username → 'admin', click LOG IN
 
@@ -17,6 +18,18 @@ source "$SCRIPT_DIR/config.sh" 2>/dev/null || { echo "FEHLER: scripts/config.sh 
 
 LOCAL_PORT="${VIDA_LOCAL_PORT:-18080}"
 REMOTE_PORT="${VIDA_WEB_PORT:-8080}"
+
+if [ "${AGENT_MODE:-ssh}" = "local" ]; then
+  echo "✓ Local mode: VIDA Web UI direkt erreichbar"
+  echo ""
+  echo "VIDA URL: http://localhost:${REMOTE_PORT}/Vida"
+  echo ""
+  echo "Claude Code (Chrome DevTools MCP):"
+  echo "  new_page http://localhost:${REMOTE_PORT}/Vida"
+  echo "  fill username → 'admin'"
+  echo "  click LOG IN"
+  exit 0
+fi
 
 # Prüfe ob Tunnel schon läuft
 if ss -tlnp 2>/dev/null | grep -q ":${LOCAL_PORT}"; then

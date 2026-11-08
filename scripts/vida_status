@@ -3,24 +3,31 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/config.sh" 2>/dev/null || { echo "FEHLER: scripts/config.sh fehlt"; exit 1; }
+source "$SCRIPT_DIR/lib.sh"
 
-ssh_host() {
-  ssh -i "$SSH_KEY" -p "$SSH_PORT" -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" "$@"
-}
-
-echo "=== Host-Rechner ($SSH_HOST) ==="
-ssh_host "echo 'RAM:' && free -h | awk 'NR==2{print \$2\" gesamt, \"\$7\" verfügbar\"}' && echo 'Disk:' && df -h /home | awk 'NR==2{print \$4\" frei (\"\$5\" benutzt)\"}'"
+if [ "${AGENT_MODE:-ssh}" = "local" ]; then
+  echo "=== Lokaler Rechner ==="
+  echo -n "RAM: "
+  free -h | awk 'NR==2{print $2" gesamt, "$7" verfügbar"}'
+  echo -n "Disk: "
+  df -h "$HOME" | awk 'NR==2{print $4" frei ("$5" benutzt)"}'
+else
+  echo "=== Host-Rechner ($SSH_HOST) ==="
+  run_cmd "echo 'RAM:' && free -h | awk 'NR==2{print \$2\" gesamt, \"\$7\" verfügbar\"}' && echo 'Disk:' && df -h /home | awk 'NR==2{print \$4\" frei (\"\$5\" benutzt)\"}'"
+fi
 
 echo ""
 echo "=== VIDA VM ($VM_NAME) ==="
-ssh_host "vboxmanage showvminfo '$VM_NAME' | grep -E '^State|Memory size|Number of CPUs|VRDE port'"
+run_cmd "VBoxManage showvminfo '$VM_NAME' | grep -E '^State|Memory size|Number of CPUs|VRDE port'"
 
 echo ""
 echo "=== RDP-Zugang ==="
-RDP_STATE=$(ssh_host "ss -tn | grep 3389 | head -1" 2>/dev/null)
+RDP_TARGET="${RDP_HOST:-localhost:3389}"
+RDP_PORT="${RDP_TARGET##*:}"
+RDP_STATE=$(run_cmd "ss -tn | grep $RDP_PORT | head -1" 2>/dev/null)
 if [ -n "$RDP_STATE" ]; then
   echo "Aktive RDP-Verbindung: $RDP_STATE"
 else
   echo "Kein aktiver RDP-Client verbunden"
 fi
-echo "Verbinden: remmina rdp://$RDP_HOST"
+echo "Verbinden: remmina rdp://$RDP_TARGET"

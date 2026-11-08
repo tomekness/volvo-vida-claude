@@ -1,39 +1,31 @@
 #!/usr/bin/env bash
-# Startet die VIDA VM auf dem Host und öffnet RDP-Verbindung
+# Startet die VIDA VM und öffnet eine RDP-Verbindung.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG="$SCRIPT_DIR/config.sh"
-if [ ! -f "$CONFIG" ]; then
-  echo "FEHLER: $CONFIG nicht gefunden."
-  echo "  cp scripts/config.sh.example scripts/config.sh  && dann Werte eintragen"
-  exit 1
-fi
-source "$CONFIG"
-
-ssh_host() {
-  ssh -i "$SSH_KEY" -p "$SSH_PORT" -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" "$@"
-}
+source "$SCRIPT_DIR/config.sh" 2>/dev/null || { echo "FEHLER: scripts/config.sh fehlt"; exit 1; }
+source "$SCRIPT_DIR/lib.sh"
 
 echo "→ Prüfe VM-Status..."
-STATE=$(ssh_host "vboxmanage showvminfo '$VM_NAME' | grep '^State'" 2>/dev/null)
+STATE=$(run_cmd "VBoxManage showvminfo '$VM_NAME' --machinereadable | grep '^VMState='" 2>/dev/null)
 
 if echo "$STATE" | grep -q "running"; then
   echo "→ VM läuft bereits."
 else
   echo "→ Starte $VM_NAME headless..."
-  ssh_host "vboxmanage startvm '$VM_NAME' --type headless"
+  run_cmd "VBoxManage startvm '$VM_NAME' --type headless"
   echo "→ Warte bis Windows hochgefahren ist (~90 Sekunden)..."
   sleep 90
 fi
 
-echo "→ Öffne RDP-Verbindung zu $RDP_HOST ..."
+RDP_TARGET="${RDP_HOST:-localhost:3389}"
+echo "→ Öffne RDP-Verbindung zu $RDP_TARGET ..."
 if command -v remmina &>/dev/null; then
-  remmina rdp://$RDP_HOST &
+  remmina rdp://$RDP_TARGET &
 elif command -v xfreerdp &>/dev/null; then
-  xfreerdp /v:$RDP_HOST /size:1152x863 &
+  xfreerdp /v:$RDP_TARGET /size:1152x863 &
 else
   echo "! Kein RDP-Client gefunden — bitte installieren: sudo apt install remmina"
-  echo "  Dann manuell verbinden: remmina rdp://$RDP_HOST"
+  echo "  Dann manuell verbinden: remmina rdp://$RDP_TARGET"
 fi
 
 echo "✓ Fertig. Login: vida / vida"

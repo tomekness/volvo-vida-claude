@@ -11,20 +11,26 @@ Template: `scripts/config.sh.example`
 
 **Immer zuerst:** `source scripts/config.sh` um die Variablen zu laden.
 
+**AGENT_MODE:** `"local"` = VIDA und Agent laufen auf demselben Rechner (kein SSH).  
+`"ssh"` = VIDA läuft auf einem Remote-Host (Standard). Alle Scripts unterstützen beide Modi.
+
 ## Slash Commands
 
 | Command | Was |
 |---------|-----|
-| `/vida_init <fahrzeug>` | **Neues Projekt anlegen** — VIDA-IDs ermitteln, `facts/vehicle_facts.md` erstellen |
+| `/vida_provision` | **VM einrichten** — Ersteinrichtung oder Setup vervollständigen |
+| `/vida_init <fahrzeug>` | **Neues Fahrzeugprojekt anlegen** — VIDA-IDs ermitteln, `facts/vehicle_facts.md` erstellen |
 | `/vida_start` | VIDA VM starten + RDP öffnen |
 | `/vida_stop` | VIDA VM sauber herunterfahren |
 | `/vida_status` | VM-Zustand + Host RAM/Disk |
 | `/vida_screenshot` | Screenshot der laufenden VM |
+| `/vida_snapshot [name]` | Snapshot nehmen, auflisten oder löschen |
+| `/vida_reset [snapshot]` | VM auf Snapshot zurücksetzen (default: `DEFAULT_SNAPSHOT` aus config.sh) |
 | `/vida_readout` | Vollständiger Diagnose-Readout aus SQL |
 | `/vida_repair <komponente>` | Reparaturmappe aus VIDA-DB erstellen |
 | `/vida_xps2pdf` | VIDA-Druckdokumente (XPS → PDF) |
+| `/vida_debug` | Einen offenen Debug-Task aus `vida_debug/TODO.md` ausführen |
 | `/repair_done <ordner> <name>` | Reparatur als erledigt markieren |
-| `/vida_reset [snapshot]` | VM auf Snapshot zurücksetzen (default: `DEFAULT_SNAPSHOT` aus config.sh) |
 | `/host_sync` | Host-Rechner bidirektional mit Repo synchronisieren |
 
 ## Wichtige Pfade

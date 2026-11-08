@@ -2,7 +2,8 @@
 
 Claude Code skills for Volvo VIDA 2014D diagnostics — control a VIDA VM, read diagnostic trouble codes from the SQL database, and build repair documentation from VIDA service data.
 
-**Requires:** A machine running VIDA 2014D in VirtualBox, accessible via SSH.
+**Requires:** A machine running VIDA 2014D in VirtualBox.
+Works with VIDA on the **same machine** as Claude Code (local mode) or on a **remote host** (SSH mode).
 
 ---
 
@@ -27,23 +28,32 @@ Community resources for obtaining a VIDA VM can be found at [volvodiag.com](http
 
 ## Prerequisites
 
-On the **host machine** (running VirtualBox + VIDA):
+### Local Mode (`AGENT_MODE=local`) — VIDA and Claude Code on the same machine
+
 - Ubuntu/Debian Linux
-- VirtualBox with VIDA 2014D VM already installed and configured
-- SSH server enabled
-- Python 3 (for XML/ZIP decoding)
-- `bcp` tool (for image extraction from VIDA DB)
+- VirtualBox with VIDA 2014D VM
+- [Claude Code](https://claude.ai/code)
+- Python 3 (for `/vida_repair`)
+- `remmina` or `xfreerdp` for RDP (optional)
+
+### SSH Mode (`AGENT_MODE=ssh`) — VIDA on a remote host
+
+On the **host machine** (running VirtualBox + VIDA):
+- Ubuntu/Debian Linux with VirtualBox and SSH server
+- Python 3 and `bcp` tool (for `/vida_repair`)
 
 On your **local machine** (running Claude Code):
 - [Claude Code](https://claude.ai/code)
 - SSH access to the host machine
-- `remmina` or `xfreerdp` for RDP (optional, for `/vida_start`)
+- `remmina` or `xfreerdp` for RDP (optional)
+
+> New to VIDA setup? See [docs/SETUP_VM.md](docs/SETUP_VM.md) — or run `/vida_provision` and let the agent guide you through it.
 
 ---
 
 ## Setup
 
-**1. Clone this repo** on your local machine:
+**1. Clone this repo:**
 ```bash
 git clone https://github.com/your-username/volvo-vida-claude.git
 cd volvo-vida-claude
@@ -52,7 +62,7 @@ cd volvo-vida-claude
 **2. Configure** your connection (all variables explained inline):
 ```bash
 cp scripts/config.sh.example scripts/config.sh
-# Edit scripts/config.sh with your host IP, SSH user, VM name, vehicle info
+# Set AGENT_MODE to "local" or "ssh", then fill in VM_NAME and other values
 ```
 
 **2b. Set up vida_docs.db** (optional, ~230 MB — enables offline document search):
@@ -79,18 +89,20 @@ ssh USER@HOST_IP "git clone https://github.com/your-username/volvo-vida-claude.g
 
 | Command | What it does |
 |---------|-------------|
+| `/vida_provision` | **Set up the VIDA VM** — walks through first-time setup or completes a partial install |
 | `/vida_init <vehicle>` | **Set up a new vehicle project** — query VIDA IDs, create `facts/vehicle_facts.md` |
 | `/vida_start` | Start VIDA VM + open RDP connection |
 | `/vida_stop` | Gracefully shut down VIDA VM |
 | `/vida_status` | VM state + host RAM/disk usage |
 | `/vida_screenshot` | Screenshot of the running VM |
+| `/vida_snapshot [name]` | Take a snapshot, list snapshots, or delete one |
+| `/vida_reset [snapshot]` | Restore VM to a snapshot (default: `DEFAULT_SNAPSHOT` from config.sh) |
 | `/vida_readout` | Full diagnostic scan from VIDA SQL DB → creates readout file |
 | `/vida_repair <component>` | Build repair folder from VIDA service database |
 | `/vida_xps2pdf` | Convert new VIDA printouts (XPS → PDF) into repo |
+| `/vida_debug` | Work one open debug task from `vida_debug/TODO.md`, then stop |
 | `/repair_done <folder> <name>` | Mark repair as complete, move to `_done/` |
 | `/host_sync` | Sync the diagnostics host machine with the central git repo |
-| `/vida_debug` | Work one open debug task from `vida_debug/TODO.md`, then stop |
-| `/vida_reset [snapshot]` | Restore VM to a snapshot (default: `DEFAULT_SNAPSHOT` from config.sh) |
 
 ---
 

@@ -3,43 +3,40 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/config.sh" 2>/dev/null || { echo "FEHLER: scripts/config.sh fehlt"; exit 1; }
-
-ssh_host() {
-  ssh -i "$SSH_KEY" -p "$SSH_PORT" -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" "$@"
-}
+source "$SCRIPT_DIR/lib.sh"
 
 echo "→ Prüfe VM-Status..."
-STATE=$(ssh_host "vboxmanage showvminfo '$VM_NAME' | grep '^State'" 2>/dev/null)
+STATE=$(run_cmd "VBoxManage showvminfo '$VM_NAME' --machinereadable | grep '^VMState='" 2>/dev/null)
 
-if echo "$STATE" | grep -qE "powered off|aborted"; then
-  echo "→ VM ist bereits aus ($STATE)."
+if echo "$STATE" | grep -qE "poweroff|aborted"; then
+  echo "→ VM ist bereits aus."
   exit 0
 fi
 
 echo "→ Sende Windows shutdown /f /s /t 5 via Win+R..."
-ssh_host "vboxmanage controlvm '$VM_NAME' keyboardputscancode e0 5b e0 db" 2>/dev/null
+run_cmd "VBoxManage controlvm '$VM_NAME' keyboardputscancode e0 5b e0 db" 2>/dev/null
 sleep 1
-ssh_host "vboxmanage controlvm '$VM_NAME' keyboardputscancode 13 93" 2>/dev/null
+run_cmd "VBoxManage controlvm '$VM_NAME' keyboardputscancode 13 93" 2>/dev/null
 sleep 1
-ssh_host "vboxmanage controlvm '$VM_NAME' keyboardputstring 'shutdown /f /s /t 5'" 2>/dev/null
+run_cmd "VBoxManage controlvm '$VM_NAME' keyboardputstring 'shutdown /f /s /t 5'" 2>/dev/null
 sleep 0.5
-ssh_host "vboxmanage controlvm '$VM_NAME' keyboardputscancode 1c 9c" 2>/dev/null
+run_cmd "VBoxManage controlvm '$VM_NAME' keyboardputscancode 1c 9c" 2>/dev/null
 
 echo "→ Warte auf Windows-Shutdown (max. 90 Sekunden)..."
 for i in $(seq 1 30); do
   sleep 3
-  STATE=$(ssh_host "vboxmanage showvminfo '$VM_NAME' | grep '^State'" 2>/dev/null)
-  if echo "$STATE" | grep -qE "powered off|aborted"; then
+  STATE=$(run_cmd "VBoxManage showvminfo '$VM_NAME' --machinereadable | grep '^VMState='" 2>/dev/null)
+  if echo "$STATE" | grep -qE "poweroff|aborted"; then
     echo "✓ VM heruntergefahren nach $((i*3))s."
     exit 0
   fi
 done
 
 echo "! Timeout nach 90s — kill VBoxHeadless direkt..."
-PIDS=$(ssh_host "pgrep -f 'VBoxHeadless'" 2>/dev/null)
+PIDS=$(run_cmd "pgrep -f 'VBoxHeadless'" 2>/dev/null)
 if [ -n "$PIDS" ]; then
-  ssh_host "kill -9 $PIDS" 2>/dev/null
+  run_cmd "kill -9 $PIDS" 2>/dev/null
   sleep 3
 fi
-STATE=$(ssh_host "vboxmanage showvminfo '$VM_NAME' | grep '^State'" 2>/dev/null)
+STATE=$(run_cmd "VBoxManage showvminfo '$VM_NAME' --machinereadable | grep '^VMState='" 2>/dev/null)
 echo "✓ Fertig. Status: $STATE"

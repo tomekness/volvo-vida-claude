@@ -3,17 +3,16 @@
 # Usage: vida_reset [snapshot-name]
 # Default: letzter bekannter guter Snapshot (in config.sh als DEFAULT_SNAPSHOT)
 # --list  Zeigt alle verfügbaren Snapshots an
+#
+# Snapshot nehmen (nicht nur wiederherstellen): scripts/vida_snapshot
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/config.sh" 2>/dev/null || { echo "FEHLER: scripts/config.sh fehlt"; exit 1; }
-
-ssh_host() {
-  ssh -i "$SSH_KEY" -p "$SSH_PORT" -o StrictHostKeyChecking=no -o BatchMode=yes "$SSH_USER@$SSH_HOST" "$@"
-}
+source "$SCRIPT_DIR/lib.sh"
 
 if [ "$1" = "--list" ]; then
   echo "→ Verfügbare Snapshots:"
-  ssh_host "VBoxManage snapshot '$VM_NAME' list" 2>/dev/null
+  run_cmd "VBoxManage snapshot '$VM_NAME' list" 2>/dev/null
   exit 0
 fi
 
@@ -28,24 +27,25 @@ fi
 echo "→ Snapshot-Reset: '$SNAPSHOT'"
 
 echo "→ Prüfe VM-Status..."
-STATE=$(ssh_host "VBoxManage showvminfo '$VM_NAME' --machinereadable | grep '^VMState='" 2>/dev/null)
+STATE=$(run_cmd "VBoxManage showvminfo '$VM_NAME' --machinereadable | grep '^VMState='" 2>/dev/null)
 
 if ! echo "$STATE" | grep -qE "poweroff|aborted|saved"; then
   echo "→ VM läuft noch — poweroff (hart, für Reset OK)..."
-  ssh_host "VBoxManage controlvm '$VM_NAME' poweroff" 2>/dev/null
+  run_cmd "VBoxManage controlvm '$VM_NAME' poweroff" 2>/dev/null
   sleep 5
 fi
 
 echo "→ Stelle Snapshot wieder her..."
-if ssh_host "VBoxManage snapshot '$VM_NAME' restore '$SNAPSHOT'" 2>&1; then
+if run_cmd "VBoxManage snapshot '$VM_NAME' restore '$SNAPSHOT'" 2>&1; then
   echo "✓ Snapshot '$SNAPSHOT' wiederhergestellt."
 else
   echo "! Fehler — verfügbare Snapshots:"
-  ssh_host "VBoxManage snapshot '$VM_NAME' list" 2>/dev/null
+  run_cmd "VBoxManage snapshot '$VM_NAME' list" 2>/dev/null
   exit 1
 fi
 
 echo "→ Starte VM headless..."
-ssh_host "VBoxManage startvm '$VM_NAME' --type headless" 2>/dev/null
+run_cmd "VBoxManage startvm '$VM_NAME' --type headless" 2>/dev/null
 sleep 3
-echo "✓ VM gestartet. RDP: $RDP_HOST — Login: vida / vida"
+RDP_TARGET="${RDP_HOST:-localhost:3389}"
+echo "✓ VM gestartet. RDP: $RDP_TARGET — Login: vida / vida"

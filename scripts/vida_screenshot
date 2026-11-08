@@ -3,13 +3,16 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/config.sh" 2>/dev/null || { echo "FEHLER: scripts/config.sh fehlt"; exit 1; }
+source "$SCRIPT_DIR/lib.sh"
 
 TMP="/tmp/vida_screenshot_$(date +%H%M%S).png"
 
-ssh -i "$SSH_KEY" -p "$SSH_PORT" -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" \
-  "vboxmanage controlvm '$VM_NAME' screenshotpng /tmp/vida_shot.png" 2>/dev/null
-
-scp -i "$SSH_KEY" -P "$SSH_PORT" "$SSH_USER@$SSH_HOST:/tmp/vida_shot.png" "$TMP" 2>/dev/null
+if [ "${AGENT_MODE:-ssh}" = "local" ]; then
+  VBoxManage controlvm "$VM_NAME" screenshotpng "$TMP" 2>/dev/null
+else
+  run_cmd "VBoxManage controlvm '$VM_NAME' screenshotpng /tmp/vida_shot.png" 2>/dev/null
+  get_remote_file "/tmp/vida_shot.png" "$TMP"
+fi
 
 if [ -f "$TMP" ]; then
   echo "→ Screenshot: $TMP"

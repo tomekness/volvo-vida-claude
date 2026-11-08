@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Snapshot der VIDA VM nehmen, auflisten oder löschen.
+#
+# Usage:
+#   vida_snapshot [name]            Snapshot nehmen (name optional, default: Datum+Zeit)
+#   vida_snapshot --list            Verfügbare Snapshots anzeigen
+#   vida_snapshot --delete <name>   Snapshot löschen (fragt nach Bestätigung)
+#
+# Tipp: Snapshot-Name in config.sh als DEFAULT_SNAPSHOT eintragen,
+#       damit vida_reset ohne Argument diesen Snapshot verwendet.
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/config.sh" 2>/dev/null || { echo "FEHLER: scripts/config.sh fehlt"; exit 1; }
+source "$SCRIPT_DIR/lib.sh"
+
+if [ "$1" = "--list" ]; then
+  echo "→ Verfügbare Snapshots für '$VM_NAME':"
+  run_cmd "VBoxManage snapshot '$VM_NAME' list" 2>/dev/null || echo "(keine Snapshots)"
+  exit 0
+fi
+
+if [ "$1" = "--delete" ]; then
+  if [ -z "${2:-}" ]; then
+    echo "FEHLER: Snapshot-Name fehlt"
+    echo "Usage: vida_snapshot --delete <name>"
+    exit 1
+  fi
+  echo "→ Snapshot löschen: '$2'"
+  read -rp "Bestätigung — 'yes' eingeben: " CONFIRM
+  if [ "$CONFIRM" != "yes" ]; then
+    echo "Abgebrochen."
+    exit 0
+  fi
+  run_cmd "VBoxManage snapshot '$VM_NAME' delete '$2'"
+  echo "✓ Snapshot '$2' gelöscht."
+  exit 0
+fi
+
+NAME="${1:-$(date '+%Y-%m-%d-%H-%M')}"
+
+echo "→ Prüfe VM-Status..."
+STATE=$(run_cmd "VBoxManage showvminfo '$VM_NAME' --machinereadable | grep '^VMState='" 2>/dev/null)
+
+if echo "$STATE" | grep -qE "poweroff|aborted"; then
+  echo "⚠ VM ist aus — Offline-Snapshot wird erstellt."
+fi
+
+echo "→ Snapshot: '$NAME' ..."
+if run_cmd "VBoxManage snapshot '$VM_NAME' take '$NAME'" 2>&1; then
+  echo "✓ Snapshot '$NAME' erstellt."
+  echo ""
+  echo "Tipp: DEFAULT_SNAPSHOT=\"$NAME\" in scripts/config.sh eintragen,"
+  echo "      damit vida_reset ohne Argument diesen Snapshot verwendet."
+else
+  echo "! Snapshot fehlgeschlagen."
+  exit 1
+fi

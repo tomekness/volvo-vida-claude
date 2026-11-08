@@ -3,7 +3,12 @@
 # Kopiere diese Datei: cp scripts/config.sh.example scripts/config.sh
 # Dann die Werte anpassen. config.sh wird NICHT ins Git eingecheckt.
 
-# ── SSH-Zugang zum Host-Rechner ──────────────────────────────────────────────
+# ── Betriebsmodus ─────────────────────────────────────────────────────────────
+# "local" = Agent + VirtualBox laufen auf demselben Rechner (kein SSH nötig)
+# "ssh"   = VIDA läuft auf einem Remote-Host, Agent greift per SSH zu
+AGENT_MODE="ssh"
+
+# ── SSH-Zugang zum Host-Rechner (nur bei AGENT_MODE=ssh) ─────────────────────
 SSH_HOST="192.168.1.100"           # IP oder Hostname des Rechners mit VirtualBox
 SSH_PORT="22"                      # SSH-Port (Standard: 22)
 SSH_USER="username"                # SSH-Benutzername auf dem Host

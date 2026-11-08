@@ -1,9 +1,28 @@
 #!/usr/bin/env bash
 # Syncs the diagnostics host machine with the central git repo.
-# Commits and pushes any local changes on the host, then pulls locally.
+# In ssh mode:  commits+pushes on the remote host, then pulls locally.
+# In local mode: commits+pushes locally (no remote host involved).
 set -euo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 source "$REPO/scripts/config.sh"
+source "$REPO/scripts/lib.sh"
+
+if [ "${AGENT_MODE:-ssh}" = "local" ]; then
+  echo "→ Local mode: committing and pushing..."
+  cd "$REPO"
+  if [ -n "$(git status --porcelain)" ]; then
+    git add -A
+    MSG="Update: $(date '+%Y-%m-%d %H:%M')"
+    git commit -m "$MSG"
+    echo "→ Committed: $MSG"
+    git push
+    echo "→ Pushed."
+  else
+    echo "→ Nothing to commit."
+  fi
+  echo "✓ Sync complete."
+  exit 0
+fi
 
 REMOTE_PATH="$REMOTE_REPO_PATH"
 
