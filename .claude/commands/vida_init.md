@@ -59,7 +59,7 @@ sqlcmd -S .\VIDA -d vida -Q "SELECT Id, Name FROM ModelYear WHERE fkVehicleModel
 
 **3e — Verifikation mit DocumentProfile:**
 ```
-sqlcmd -S .\VIDA -d servicerep_de-DE -Q "SELECT COUNT(*) as AnzahlDokumente FROM DocumentProfile dp WHERE dp.fkVehicleModel = MODELL_ID AND dp.fkModelYear = JAHR_ID" -o Z:\doc_count.txt -y 0
+sqlcmd -S .\VIDA -d servicerep_$VIDA_LANGUAGE -Q "SELECT COUNT(*) as AnzahlDokumente FROM DocumentProfile dp WHERE dp.fkVehicleModel = MODELL_ID AND dp.fkModelYear = JAHR_ID" -o Z:\doc_count.txt -y 0
 ```
 
 Mindestens > 100 Dokumente sollten gefunden werden. Falls 0: IDs nochmal prüfen.
@@ -87,6 +87,7 @@ REMOTE_DOWNLOADS_PATH="$HOST_DOWNLOADS"
 VIN="YOUR_VIN_HERE"
 VIDA_VEHICLE_MODEL="MODELL_ID"    # aus Schritt 3b
 VIDA_MODEL_YEAR="JAHR_ID"         # aus Schritt 3d
+VIDA_LANGUAGE="de-DE"             # Sprache der VIDA-Installation (z.B. de-DE, en-US)
 
 # vida_docs.db — 230 MB SQLite, nicht im Git
 # 0 = auf SSH-Host (Diagnose-Rechner), 1 = lokal auf diesem Rechner

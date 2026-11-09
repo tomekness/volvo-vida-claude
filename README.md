@@ -35,12 +35,14 @@ Community resources for obtaining a VIDA VM can be found at [volvodiag.com](http
 - [Claude Code](https://claude.ai/code)
 - Python 3 (for `/vida_repair`)
 - `remmina` or `xfreerdp` for RDP (optional)
+- J2534 OBD2 adapter — only needed for live diagnostics via VIDA GUI; not required for SQL-based `/vida_readout`
 
 ### SSH Mode (`AGENT_MODE=ssh`) — VIDA on a remote host
 
 On the **host machine** (running VirtualBox + VIDA):
 - Ubuntu/Debian Linux with VirtualBox and SSH server
 - Python 3 and `bcp` tool (for `/vida_repair`)
+- J2534 OBD2 adapter — only needed for live diagnostics via VIDA GUI; not required for SQL-based `/vida_readout`
 
 On your **local machine** (running Claude Code):
 - [Claude Code](https://claude.ai/code)
@@ -151,7 +153,7 @@ volvo-vida-claude/
 
 VIDA 2014D stores all diagnostic data in a SQL Server database (`DiagSwdlSession`) inside the VM. Instead of using the VIDA GUI, `/vida_readout` opens a CMD window in the VM via VirtualBox keyboard scan codes and runs `sqlcmd` queries, then reads the output files from the shared folder (`Z:\` = `~/Downloads` on the host).
 
-`/vida_repair` similarly queries the `servicerep_de-DE` database for service documents, decodes the ZIP-compressed XML content, extracts images via `bcp`, and builds structured repair documentation.
+`/vida_repair` similarly queries the `servicerep_${VIDA_LANGUAGE}` database (e.g. `servicerep_de-DE`) for service documents, decodes the ZIP-compressed XML content, extracts images via `bcp`, and builds structured repair documentation.
 
 ---
 
@@ -196,8 +198,8 @@ The `fkVehicleModel` and `fkModelYear` values in `scripts/config.sh` are specifi
 
 Or manually in CMD inside the VM:
 ```sql
-sqlcmd -S .\VIDA -d servicerep_de-DE -Q "SELECT Id, Name FROM VehicleModel ORDER BY Name"
-sqlcmd -S .\VIDA -d servicerep_de-DE -Q "SELECT Id, Name FROM ModelYear ORDER BY Name"
+sqlcmd -S .\VIDA -d servicerep_${VIDA_LANGUAGE} -Q "SELECT Id, Name FROM VehicleModel ORDER BY Name"
+sqlcmd -S .\VIDA -d servicerep_${VIDA_LANGUAGE} -Q "SELECT Id, Name FROM ModelYear ORDER BY Name"
 ```
 
 VIDA 2014D covers all Volvo models from approximately 1990–2014.
@@ -208,4 +210,4 @@ VIDA 2014D covers all Volvo models from approximately 1990–2014.
 
 - VIDA 2014D is Volvo's proprietary dealer diagnostic software. This project only provides Claude Code skills to interact with an already-licensed installation — no VIDA software is distributed here.
 - The VIDA VM requires a valid VIDA license (Volvo Tech Info subscription or dealer access).
-- Tested with: Volvo V70 II (P2 platform, 2000–2007), MongoosePro JLR J2534 interface.
+- Tested with: Volvo V70 II (P2 platform, 2000–2007), VIDA VM from [volvodiag.com](https://volvodiag.com/), MongoosePro JLR J2534 interface, VIDA language `de-DE`.

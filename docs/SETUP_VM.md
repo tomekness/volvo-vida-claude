@@ -15,6 +15,8 @@ sudo apt install virtualbox remmina python3
 # Optional: xpstopdf (libgxps-utils) for /vida_xps2pdf
 ```
 
+- **J2534 OBD2 adapter** — only required if you want to use the VIDA GUI for live diagnostics (live data, module programming). Not needed for SQL-based `/vida_readout` or `/vida_repair`.
+
 **Agent mode** (`AGENT_MODE` in `scripts/config.sh`):
 
 | Mode | When to use |

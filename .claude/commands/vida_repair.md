@@ -69,11 +69,11 @@ Ergebnisse mit `facts/vehicle_facts.md` → "Bestätigte VIDA-Quelldokumente" ab
 
 **1b. Live-SQL-Suche in der VM (wenn vida_docs.db fehlt oder mehr Details nötig):**
 
-Suche in `servicerep_de-DE.Document` nach passenden Titeln.
+Suche in `servicerep_${VIDA_LANGUAGE}.Document` nach passenden Titeln.
 Sende per CMD in der VM (CMD muss offen sein — ggf. Win+R → cmd, Scancode `e0 5b 13 93 e0 db`):
 
 ```
-sqlcmd -S .\VIDA -d servicerep_de-DE -Q "SELECT vccNumber, title, path FROM Document WHERE title LIKE '%SUCHBEGRIFF%' ORDER BY vccNumber" -o Z:\repair_search.txt -y 0
+sqlcmd -S .\VIDA -d servicerep_$VIDA_LANGUAGE -Q "SELECT vccNumber, title, path FROM Document WHERE title LIKE '%SUCHBEGRIFF%' ORDER BY vccNumber" -o Z:\repair_search.txt -y 0
 ```
 
 Ausgabe auf dem Host lesen:
@@ -90,7 +90,7 @@ $SSH_CMD "cat ~/Downloads/repair_search.txt"
 Manche Komponenten haben mehrere Varianten je nach Baujahr. Immer mit `DocumentProfile` verifizieren dass das Dokument für das richtige Modelljahr gilt:
 
 ```
-sqlcmd -S .\VIDA -d servicerep_de-DE -Q "SELECT DISTINCT d.vccNumber, d.title FROM Document d JOIN DocumentProfile dp ON dp.fkDocument = d.Id WHERE d.title LIKE '%SUCHBEGRIFF%' AND dp.fkVehicleModel = $VIDA_VEHICLE_MODEL AND dp.fkModelYear = $VIDA_MODEL_YEAR ORDER BY d.vccNumber" -o Z:\repair_search_filtered.txt -y 0
+sqlcmd -S .\VIDA -d servicerep_$VIDA_LANGUAGE -Q "SELECT DISTINCT d.vccNumber, d.title FROM Document d JOIN DocumentProfile dp ON dp.fkDocument = d.Id WHERE d.title LIKE '%SUCHBEGRIFF%' AND dp.fkVehicleModel = $VIDA_VEHICLE_MODEL AND dp.fkModelYear = $VIDA_MODEL_YEAR ORDER BY d.vccNumber" -o Z:\repair_search_filtered.txt -y 0
 ```
 
 Werte für dieses Fahrzeug (YOUR_VIN_HERE):
@@ -106,7 +106,7 @@ Falls die gefilterte Suche zu wenig Treffer liefert: ungefilterte Suche als Fall
 Für jedes ausgewählte Dokument:
 
 ```
-sqlcmd -S .\VIDA -d servicerep_de-DE -Q "SELECT CONVERT(varchar(max), CONVERT(varbinary(max), XmlContent), 1) FROM Document WHERE vccNumber='VCC-XXXXXX-X'" -o Z:\doc_VCCXXXXXX.txt -y 0
+sqlcmd -S .\VIDA -d servicerep_$VIDA_LANGUAGE -Q "SELECT CONVERT(varchar(max), CONVERT(varbinary(max), XmlContent), 1) FROM Document WHERE vccNumber='VCC-XXXXXX-X'" -o Z:\doc_VCCXXXXXX.txt -y 0
 ```
 
 Auf dem Host per Python dekodieren:
@@ -153,7 +153,7 @@ Die XML-Dokumente enthalten oft Querverweise auf andere Dokumente (z.B. "Scheibe
 
 Für jede gefundene Referenz-ID (`0900c8af...`):
 ```
-sqlcmd -S .\VIDA -d servicerep_de-DE -Q "SELECT vccNumber, title, path FROM Document WHERE path LIKE '%0900c8afXXXXXXXX%'" -o Z:\ref_search.txt -y 0
+sqlcmd -S .\VIDA -d servicerep_$VIDA_LANGUAGE -Q "SELECT vccNumber, title, path FROM Document WHERE path LIKE '%0900c8afXXXXXXXX%'" -o Z:\ref_search.txt -y 0
 ```
 
 Falls Treffer: XML extrahieren wie in Schritt 2. Diese Dokumente kommen in den **Vorbereitungen**-Abschnitt der README und erhalten eigene PDFs.
@@ -309,7 +309,7 @@ google-chrome --headless --disable-gpu --no-sandbox \
 
 **Bilder:** [Liste der GIF-Dateien mit Quelle imagerepository]
 
-_Extrahiert aus VIDA-DB servicerep_de-DE, [Datum]. Fahrzeug: YOUR_VIN_HERE_
+_Extrahiert aus VIDA-DB servicerep_$VIDA_LANGUAGE, [Datum]. Fahrzeug: YOUR_VIN_HERE_
 
 ---
 
@@ -385,7 +385,7 @@ $SSH_CMD "vboxmanage sharedfolder add '$VM_NAME' --name vida_share --hostpath $R
 
 **ZIP-Decode für XmlContent:**
 - XmlContent = `image` Typ in SQL = ZIP-komprimiertes XML
-- Inhalt ist eine einzelne .xml Datei (z.B. `0900c8af8085831a_de-DE.xml`)
+- Inhalt ist eine einzelne .xml Datei (z.B. `0900c8af8085831a_de-DE.xml`) — Sprach-Suffix entspricht `$VIDA_LANGUAGE`
 - Bilder werden als `0900c8af[8hex]_0_0.gif` referenziert
 
 **BCP-Bildexport:**

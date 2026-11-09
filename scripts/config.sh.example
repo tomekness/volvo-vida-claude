@@ -1,52 +1,57 @@
 #!/usr/bin/env bash
-# VIDA Claude Skills — Konfiguration
-# Kopiere diese Datei: cp scripts/config.sh.example scripts/config.sh
-# Dann die Werte anpassen. config.sh wird NICHT ins Git eingecheckt.
+# VIDA Claude Skills — Configuration
+# Copy this file: cp scripts/config.sh.example scripts/config.sh
+# Then fill in your values. config.sh is NOT committed to git.
 
-# ── Betriebsmodus ─────────────────────────────────────────────────────────────
-# "local" = Agent + VirtualBox laufen auf demselben Rechner (kein SSH nötig)
-# "ssh"   = VIDA läuft auf einem Remote-Host, Agent greift per SSH zu
+# ── Agent mode ────────────────────────────────────────────────────────────────
+# "local" = Agent and VirtualBox run on the same machine (no SSH needed)
+# "ssh"   = VIDA runs on a remote host; agent connects via SSH
 AGENT_MODE="ssh"
 
-# ── SSH-Zugang zum Host-Rechner (nur bei AGENT_MODE=ssh) ─────────────────────
-SSH_HOST="192.168.1.100"           # IP oder Hostname des Rechners mit VirtualBox
-SSH_PORT="22"                      # SSH-Port (Standard: 22)
-SSH_USER="username"                # SSH-Benutzername auf dem Host
-SSH_KEY="$HOME/.ssh/id_ed25519"    # SSH-Schlüssel
+# ── SSH access to the host machine (only used when AGENT_MODE=ssh) ────────────
+SSH_HOST="192.168.1.100"           # IP or hostname of the machine running VirtualBox
+SSH_PORT="22"                      # SSH port (default: 22)
+SSH_USER="username"                # SSH username on the host
+SSH_KEY="$HOME/.ssh/id_ed25519"    # SSH private key
 
-# ── VirtualBox VM ────────────────────────────────────────────────────────────
-VM_NAME="VIDA 2014D"               # Exakter VM-Name wie in VirtualBox angezeigt
-RDP_HOST="192.168.1.100:3389"      # RDP-Adresse (IP:Port)
-SQL_PORT_NAT="14333"               # NAT-Port → 1433 in der VM (für VIDA SQL-Abfragen)
+# ── VirtualBox VM ─────────────────────────────────────────────────────────────
+VM_NAME="VIDA 2014D"               # Exact VM name as shown in VirtualBox
+RDP_HOST="192.168.1.100:3389"      # RDP address (IP:port)
+SQL_PORT_NAT="14333"               # NAT port → 1433 inside VM (for VIDA SQL queries)
 
-# ── Pfade auf dem Host-Rechner ───────────────────────────────────────────────
-# Desktop-Verzeichnis — abhängig vom Ubuntu-Locale:
-HOST_DESKTOP="~/Desktop"                     # Englisches Ubuntu
-# HOST_DESKTOP="~/Schreibtisch"              # Deutsches Ubuntu
-HOST_DOWNLOADS="~/Downloads"                 # Downloads ist auf beiden Locales gleich
-HOST_PICTURES="~/Pictures/Screenshots"       # Englisches Ubuntu
-# HOST_PICTURES="~/Bilder/Bildschirmfotos"   # Deutsches Ubuntu
+# ── Paths on the host machine ─────────────────────────────────────────────────
+# Desktop directory — depends on the OS locale:
+HOST_DESKTOP="~/Desktop"                     # English Ubuntu/Debian
+# HOST_DESKTOP="~/Schreibtisch"              # German Ubuntu
+HOST_DOWNLOADS="~/Downloads"                 # Same on all locales
+HOST_PICTURES="~/Pictures/Screenshots"       # English Ubuntu
+# HOST_PICTURES="~/Bilder/Bildschirmfotos"   # German Ubuntu
 
 REMOTE_REPO_PATH="$HOST_DESKTOP/volvo-vida-claude"
-REMOTE_DOWNLOADS_PATH="$HOST_DOWNLOADS"      # Als Z:\ in die VM eingebunden
+REMOTE_DOWNLOADS_PATH="$HOST_DOWNLOADS"      # Mounted as Z:\ inside the VM
 REMOTE_SCREENSHOTS_PATH="$HOST_PICTURES"
 
-# ── VIDA Web UI (SSH-Tunnel für vida_connect) ────────────────────────────────
-VIDA_WEB_PORT="8080"               # Port auf dem Host-Rechner → VM:80 (nach JBoss-Patch)
-VIDA_LOCAL_PORT="18080"            # Lokaler Port für SSH-Tunnel (vida_connect)
+# ── VIDA Web UI (SSH tunnel for vida_connect) ─────────────────────────────────
+VIDA_WEB_PORT="8080"               # Port on the host → VM:80 (after JBoss 0.0.0.0 patch)
+VIDA_LOCAL_PORT="18080"            # Local port for the SSH tunnel (vida_connect)
 
-# ── Snapshots ────────────────────────────────────────────────────────────────
-DEFAULT_SNAPSHOT=""                # Default für vida_reset — z.B. "nach-sprachumstellung"
+# ── Snapshots ─────────────────────────────────────────────────────────────────
+DEFAULT_SNAPSHOT=""                # Default for vida_reset — e.g. "baseline-de"
 
-# ── Fahrzeug-Infos (für VIDA-Datenbankabfragen) ──────────────────────────────
+# ── Vehicle info (for VIDA database queries) ───────────────────────────────────
 VIN="YOUR_VIN_HERE"
 VIDA_VEHICLE_MODEL="1005"   # fkVehicleModel: 1005 = Volvo V70 II (P2, 2000-2007) — example
 VIDA_MODEL_YEAR="1188"      # fkModelYear:    1188 = model year 2002 — example
 # Find IDs for your vehicle via /vida_init, or manually:
-#   sqlcmd -S .\VIDA -d servicerep_de-DE -Q "SELECT Id, Name FROM VehicleModel ORDER BY Name"
-#   sqlcmd -S .\VIDA -d servicerep_de-DE -Q "SELECT Id, Name FROM ModelYear ORDER BY Name"
+#   sqlcmd -S .\VIDA -d servicerep_${VIDA_LANGUAGE} -Q "SELECT Id, Name FROM VehicleModel ORDER BY Name"
+#   sqlcmd -S .\VIDA -d servicerep_${VIDA_LANGUAGE} -Q "SELECT Id, Name FROM ModelYear ORDER BY Name"
 
-# ── vida_docs.db (VIDA document database, ~230 MB, not in git) ───────────────
+# ── VIDA language ─────────────────────────────────────────────────────────────
+# Controls which servicerep database is queried: servicerep_de-DE, servicerep_en-US, etc.
+# Must match the language installed via the Language Switcher on the VM desktop.
+VIDA_LANGUAGE="de-DE"
+
+# ── vida_docs.db (VIDA document database, ~230 MB, not in git) ────────────────
 # 0 = DB on SSH host (diagnostics machine), queried via SSH
 # 1 = DB local on this machine, direct query (faster, no SSH needed)
 VIDA_DOCS_LOCAL=0
