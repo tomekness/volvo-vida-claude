@@ -235,6 +235,8 @@ Falls keine XPS gefunden: kurz melden, weitermachen.
 
 ### 9. Freeze Frames aufbereiten — eine Datei pro DTC-Code
 
+**Vor der Auswertung lesen:** `$REPO/facts/vida_dtc_definitionen.md` — SI-Nummern, FaultCounter (FC1/3/4), und die korrekte Deutung von "Echtzeit seit Zurücksetzen".
+
 Aus `$DATE_DIR/freeze_raw.txt` eine Datei pro ECU+Code erstellen.
 
 **Komprimiert lesen:**
@@ -302,11 +304,16 @@ Fehlende Info → `_(nicht in VIDA gefunden)_` schreiben, nie aus Trainingsdaten
 - Code nach Löschung weg → **Geistercode**
 - Neuer Code → **neue Störung, priorisieren**
 
-**Freeze-Frame-Hinweise:**
+**Freeze-Frame-Hinweise** (vollständige Definitionen: `$REPO/facts/vida_dtc_definitionen.md`):
 - "Abstand" = km **zum Zeitpunkt des Fehlersetzens**
+- "Echtzeit seit Zurücksetzen: 0 s" = T=0 des Fehler-Ereignisses (NICHT Zeit seit Code-Löschung!)
+- "Zeit seit Anlassen" = Sekunden Motorlaufzeit seit Zündung AN in diesem Zyklus
 - Impulsweite > 100% = Hardware-Defekt
 - LTFT > ±15% = Kraftstoff-Trim erhöht
 - Gleiche km-Zahl nach Löschung = sofort neu gesetzt = aktiver Defekt
+- SI 6=Nein → Test unblockiert; SI 6=Ja → Test gehemmt (Ursache klären)
+- SI 8/9=255 → Fehler dauerhaft aktiv (gesättigter Zähler)
+- Zähler 1=0 → Fehler trat im letzten Betriebszyklus auf
 
 ### 11. Scan-MD erstellen
 

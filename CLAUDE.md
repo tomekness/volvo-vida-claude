@@ -76,6 +76,12 @@ Bei jeder elektrotechnischen Frage (Pins, Farben, Spannungen, Steckerbelegungen)
 2. `repairs/KOMPONENTE/` lesen — bestehende Reparaturmappen können mehr Details enthalten
 3. Erst danach VIDA SQL abfragen
 
+Bei DTC-Auswertung (Freeze Frame, Status Identifier, FaultCounter):
+
+1. `facts/vida_dtc_definitionen.md` lesen — Definitionen für SI 1–9, Zähler FC1/3/4, Freeze-Frame-Parameter
+2. Insbesondere: "Echtzeit seit Zurücksetzen: 0 s" ≠ "sofort nach Code-Löschung" — siehe Datei
+3. SI 6 immer prüfen: Nein = Test läuft frei, Ja = Test gehemmt (anderen Fehler zuerst beheben)
+
 **Jede Angabe braucht eine Quellenspalte** — VCC-Nummer oder bestätigte Messung mit Datum.  
 **Fehlende Quelle = Angabe weglassen.** Niemals aus Trainingsdaten ergänzen.
 

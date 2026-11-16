@@ -23,7 +23,8 @@ SSH_CMD="ssh -i $SSH_KEY -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USER@$SSH
 Vor dem ersten SQL-Befehl diese Dateien lesen:
 
 1. **`$REPO/facts/vehicle_facts.md`** — Einzige Quelle der Wahrheit für alle verifizierten Fahrzeug-Spezifika (Pins, Spannungen, Sicherungen, bekannte VCC-Docs). Immer zuerst prüfen ob gesuchte Info hier bereits steht.
-2. **`$REPO/repairs/KOMPONENTE/`** — Falls bereits eine Reparaturmappe existiert, vollständig lesen um Duplikate und Widersprüche zu vermeiden.
+2. **`$REPO/facts/vida_dtc_definitionen.md`** — Wenn die Reparaturmappe DTCs, Freeze Frames, SI-Werte oder FaultCounter enthält: hier die korrekten Definitionen nachschlagen.
+3. **`$REPO/repairs/KOMPONENTE/`** — Falls bereits eine Reparaturmappe existiert, vollständig lesen um Duplikate und Widersprüche zu vermeiden.
 
 **QUELLEN-PFLICHT:** Jede Angabe (Pin-Nummer, Kabelfarbe, Spannung, Drehmomentwert, Teilenummer, Steckergröße) in erstellten Dateien **muss** eine Quellenspalte haben — entweder eine VCC-Nummer oder einen Eintrag in `facts/vehicle_facts.md`.
 

@@ -70,17 +70,38 @@
 
 ## Freeze-Frame-Werte
 
-_(Nur ausfüllen wenn abweichend oder relevant)_
+_(Nur ausfüllen wenn abweichend oder relevant — Definitionen: `facts/vida_dtc_definitionen.md`)_
 
 | Parameter | Wert | Notiz |
 |-----------|------|-------|
+| Echtzeit seit Zurücksetzen | s | T=0 des Fehler-Ereignisses (NICHT Zeit seit Code-Löschung) |
+| Zeit seit Anlassen | s | Motorlaufzeit in diesem Zündungszyklus (OBD PID 1F) |
 | Spannung (30) | V | |
 | Motordrehzahl | U/min | |
 | Motorlast | % | |
 | Kühlmitteltemp. | °C | |
 | Einspritzzeit | ms | |
-| LTFT | % | |
+| LTFT / Lambda | | 1.00=±0%, >1.15 ⚠️ |
 | Fahrgeschwindigkeit | km/h | |
+
+### Status Identifier (SI) — falls im Ausdruck vorhanden
+
+_(Definitionen: SI 1–9 → `facts/vida_dtc_definitionen.md`)_
+
+| SI | Name | Wert | Bewertung |
+|----|------|------|-----------|
+| SI 2 | Prüfung abgeschlossen | Ja/Nein | |
+| SI 3 | Drohender Fehler vorhanden | Ja/Nein | |
+| SI 6 | Prüfung gehemmt | **Nein** = OK / Ja = ⚠️ | |
+| SI 8 | Statuszähler aktuell | 0–255 | 255 = dauerhaft aktiv ⚠️ |
+
+### FaultCounter (Zähler)
+
+| Zähler | FC | Wert | Bedeutung |
+|--------|-----|------|-----------|
+| Zähler 1 | FC1 | | Fehlerfreie Zyklen seit letztem Auftreten |
+| Zähler 3 | FC3 | | Betriebszyklen seit erster Erkennung |
+| Zähler 4 | FC4 | | Bestätigte Zyklen mit aktivem Fehler |
 
 ---
 
