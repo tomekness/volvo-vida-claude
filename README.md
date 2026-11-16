@@ -208,6 +208,5 @@ VIDA 2014D covers all Volvo models from approximately 1990–2014.
 
 ## Notes
 
-- VIDA 2014D is Volvo's proprietary dealer diagnostic software. This project only provides Claude Code skills to interact with an already-licensed installation — no VIDA software is distributed here.
-- The VIDA VM requires a valid VIDA license (Volvo Tech Info subscription or dealer access).
+- VIDA 2014D is Volvo's proprietary dealer diagnostic software. This project only provides Claude Code skills to interact with an existing installation — no VIDA software is distributed here.
 - Tested with: Volvo V70 II (P2 platform, 2000–2007), VIDA VM from [volvodiag.com](https://volvodiag.com/), MongoosePro JLR J2534 interface, VIDA language `de-DE`.
